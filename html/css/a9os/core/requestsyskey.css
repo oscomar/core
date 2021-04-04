@@ -1,0 +1,75 @@
+/*_gtlsc_
+ * os.com.ar (a9os) - Open web LAMP framework and desktop environment
+ * Copyright (C) 2019-2021  Santiago Pereyra (asp95)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+cmp.a9os_core_requestsyskey .main {
+	min-width: 350px;
+	min-height: 200px;
+	background-color: rgba(255,255,255,0.5);
+	border-radius: 10px;
+	position: absolute;
+	top: calc(50% - 100px);
+	left: calc(50% - 175px);
+	color: #222;
+	overflow: hidden;
+}
+cmp.a9os_core_requestsyskey .main .header {
+	display: block;
+	position: relative;
+	text-align: left;
+	background-color: rgba(255,255,255,1);
+}
+cmp.a9os_core_requestsyskey .main .header .icon {
+	vertical-align: middle;
+	display: inline-block;
+	width: 60px;
+	height: 60px;
+	background: url(/resources/a9os/core/requestsyskey/icon.svg) center center no-repeat;
+	background-size: 70%;
+
+}
+cmp.a9os_core_requestsyskey .main .header .title {
+	vertical-align: middle;
+	display: inline-block;
+	font-size: 25px;
+	line-height: 60px;
+}
+cmp.a9os_core_requestsyskey .main .controller-string {
+	display: block;
+	position: relative;
+	text-align: center;
+	font-size: 12px;
+	color: #444;
+	margin: 6px 0;
+}
+cmp.a9os_core_requestsyskey .main .bad-pass {
+	text-align: center;
+	display: block;
+	position: relative;
+	font-size: 14px;
+	margin-top: 5px;
+	line-height: 16px;
+	opacity: 0;
+	transition: opacity 0.1s;
+}
+cmp.a9os_core_requestsyskey .main .bad-pass.show {
+	opacity: 1;
+}
+
+cmp.a9os_core_requestsyskey .main .buttons {
+	text-align: right;
+	margin-top: 24px;
+	margin-right: 20px;
+}

@@ -1,0 +1,597 @@
+/*_gtlsc_
+ * os.com.ar (a9os) - Open web LAMP framework and desktop environment
+ * Copyright (C) 2019-2021  Santiago Pereyra (asp95)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+.a9os-main .window{
+	display: block;
+	position: fixed;
+	width: 650px; /*#!#*/
+	height: 400px; /*#!#*/
+	/*overflow: hidden;*/
+	border-radius: 3px;
+	top: 20px;
+	left: 20px;
+	box-shadow: 0 6px 25px -5px rgba(0,0,0,0.4);
+	transition: visibility 0.2s, opacity 0.2s, transform 0.2s;
+	transform: none;
+	transform-origin: left;
+	min-width: 150px;
+	min-height: 32px;
+
+}
+
+.a9os-main .window.close{
+    visibility: hidden;
+    opacity: 0;
+    transform: rotate3d(200, 34, -11, 5deg);
+}
+
+.a9os-main .window.transparent.close > .main-content,
+.a9os-main .window.transparent.close .window-bar,
+.a9os-main .window.transparent.close .menu-bar{
+	backdrop-filter:none;
+	transition: backdrop-filter 0s;
+}
+
+.a9os-main .window.fullscreen,
+.a9os-main .window.maximized.fullscreen,
+.a9os-main .window.maximized.maxl.fullscreen,
+.a9os-main .window.maximized.maxr.fullscreen
+ {
+	transition: all 0.3s, z-index 0s;
+	top: 0!important;
+	left: 0!important;
+	width: 100%!important;
+	height: 100%!important; /*#!#*/
+	z-index: 1010!important;
+}
+.a9os-main .window.fullscreen.close {
+	transition: visibility 0.2s, opacity 0.2s, transform 0.2s;
+}
+
+.a9os-main .window.maximized{
+	transition: all 0.2s;
+	top: 0!important;
+	left: 0!important;
+	width: 100%!important;
+	height: calc(100% - 50px)!important; /*#!#*/
+}
+.a9os-main .window.maximized.maxl {
+	transition: all 0s;
+	width: 50%!important;
+}
+.a9os-main .window.maximized.maxr {
+	transition: all 0s;
+	width: 50%!important;
+	left: 50%!important;
+}
+
+.a9os-main .window.minimized,
+.a9os-main .window.maximized.minimized,
+.a9os-main .window.maximized.maxl.minimized,
+.a9os-main .window.maximized.maxr.minimized{
+	transition: all 0.4s linear, opacity 0.2s, transform-origin 0s;
+	transform : scale(var(--tmp-item-zoom-factor));
+	left: var(--tmp-item-left)!important;
+	transform-origin: left;
+	opacity: 0;
+	visibility: hidden;
+	top:calc(100% - 50px)!important;
+}
+.a9os-main .window.transparent.minimized > .main-content,
+.a9os-main .window.transparent.minimized .window-bar,
+.a9os-main .window.transparent.minimized .menu-bar{
+	backdrop-filter:none;
+	transition: backdrop-filter 0s;
+}
+
+
+.a9os-main .window.unminimized,
+.a9os-main .window.maximized.unminimized,
+.a9os-main .window.maximized.maxl.unminimized,
+.a9os-main .window.maximized.maxr.unminimized{
+	transition: all 0.2s, transform-origin 0s;
+}
+
+
+
+.a9os-main .window.transparent.unminimized > .main-content,
+.a9os-main .window.transparent.unminimized .window-bar,
+.a9os-main .window.transparent.unminimized .menu-bar{
+	/*backdrop-filter:none;*/
+	transition: backdrop-filter 0s ;
+}
+
+
+.a9os-main .window.transparent{
+	background-color: transparent;
+	/*backdrop-filter:blur(5px); ERROR CON MAX PREVIEW */
+	color: #fff;
+}
+.a9os-main .window.transparent > .main-content,
+.a9os-main .window.transparent .window-bar,
+.a9os-main .window.transparent .menu-bar{
+	backdrop-filter:blur(5px);
+	transition: backdrop-filter 0s 0.1s;
+}
+.a9os-main .window.transparent * {
+	transition: backdrop-filter 0s;
+}
+
+.a9os-main .window.dark-foreground {
+	color: #222;
+}
+
+.a9os-main .window.no-resize .window-bar .max-button{
+	display: none;
+}
+
+.a9os-main .window.with-iframe:not(.top-window) > .main-content:after{
+	content: "";
+	display: block;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	bottom: 0;
+	left: 0;
+	z-index: 10000;
+}
+
+.a9os-main .window.maximized .window-bar{
+	border-radius: 0;
+	box-shadow: none;
+}
+.a9os-main .window:not(.top-window) .window-bar{
+	filter: saturate(0.6) contrast(0.8)
+}
+
+.a9os-main .window.not-highligthed {
+	opacity: 0.3;
+}
+.a9os-main .window.not-highligthed:after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border-radius: 3px 3px 0 0;
+	background-color: rgba(60,60,60,0.8);
+	z-index: 10000;
+}
+
+
+.a9os-main .window .window-bar{
+	display: block;
+	position: relative;
+	box-sizing: border-box;
+	height: 32px;
+	width: 100%;
+	color: #fff;
+	background-color: rgba(60,60,60,1);
+	box-shadow: inset 0 25px 40px -40px rgba(255,255,255,0.5);
+	/*box-shadow: inset 0 -36px 66px -60px #000;*/
+	overflow: hidden;
+	font-size: 0;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	-moz-user-select: -moz-none;
+	border-radius: 3px 3px 0 0;
+	filter: contrast(1);
+}
+.a9os-main .window.dark-foreground .window-bar {
+	color: #222;
+}
+.a9os-main .window.fullscreen .window-bar {
+	height: 0;
+	transition: all 0.3s 0.1s;
+}
+
+.a9os-main .window .window-bar > div{
+	display: inline-block;
+	vertical-align: middle;
+	height: 100%;
+}
+.a9os-main .window .window-bar .left{
+	width: 50px;
+}
+.a9os-main .window .window-bar .left .nav-icon{
+	display: inline-block;
+	height: 80%;
+	position: relative;
+	vertical-align: middle;
+	margin: 0 5px;
+}
+.a9os-main .window .window-bar .left .nav-icon img{
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	pointer-events: none;
+}
+.a9os-main .window .window-bar .right{
+	width: 80px;
+	text-align: right;
+	box-sizing: border-box;
+	padding-right: 5px;
+}
+.a9os-main .window.maximized .window-bar .right {
+	padding-right: 0;
+	transition: all 0.1s;
+}
+.a9os-main .window.maximized .window-bar .right .close-button {
+	border-radius: 0;
+	width: 32px;
+	height: 32px;
+	margin: 0;
+}
+.a9os-main .window .window-bar .right > div{
+    display: inline-block;
+    vertical-align: middle;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    /* background-color: #fff; */
+    /*color: #fff;*/
+    font-weight: bold;
+    margin: 0 1px;
+    text-align: center;
+    transition: all 0.1s;
+}
+.a9os-main .window .window-bar .right > div > span {
+	display: inline-block;
+	font-size: 20px;
+	line-height: 20px;
+	vertical-align: middle;
+}
+.a9os-main .window .window-bar .right > div:hover{
+	background-color: rgba(255,255,255,0.3);
+}
+.a9os-main .window.dark-foreground .window-bar .right > div:hover {
+	background-color: rgba(0,0,0,0.1);
+}
+.a9os-main .window .window-bar .center{
+	width: calc(100% - 80px - 50px);
+	text-align: center;
+}
+.a9os-main .window .window-bar .center .title{
+	display: inline-block;
+	font-size: 14px;
+	vertical-align: middle;
+	max-width: 100%;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.a9os-main .window .menu-bar{
+	display: none;
+	position: relative;
+	width: 100%;
+	height: 30px;
+	background-color: rgba(60,60,60,1);
+	/*box-shadow: inset 0 1px 0 0 rgba(128,128,128,0.7);*/
+	color: #fff;
+	text-align: left;
+	font-size: 0;
+}
+.a9os-main .window .menu-bar:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.a9os-main .window.dark-foreground .menu-bar {
+	color: #444;
+}
+.a9os-main .window.with-menu .menu-bar{
+	display: block;
+}
+.a9os-main .window .menu-bar .item {
+	display: inline-block;
+	position: relative;
+	height: 30px;
+	margin-top: 1px;
+	line-height: 30px;
+	padding: 0 7px;
+	font-size: 15px;
+	transition: all 0.1s;
+	border-radius: 2px 2px 0 0;
+	cursor: default;
+}
+.a9os-main .window .menu-bar .item:hover{
+	background-color: rgba(255,255,255,0.1);
+}
+.a9os-main .window.dark-foreground .menu-bar .item:hover{
+	background-color: rgba(0,0,0,0.1);
+}
+.a9os-main .window .menu-bar .item:active,
+.a9os-main .window .menu-bar .item.active{
+	background-color: rgba(255,255,255,0.2);
+}
+.a9os-main .window.dark-foreground .menu-bar .item:active,
+.a9os-main .window.dark-foreground .menu-bar .item.active{
+	background-color: rgba(0,0,0,0.2);
+}
+
+.a9os-main .window > .main-content{
+	display: block;
+	position: relative;
+	bottom: 0;
+	width: 100%;
+	height: calc(100% - 32px);
+	overflow: hidden;
+	background-color: rgba(230,230,230,1);
+}
+.a9os-main .window.fullscreen > .main-content {
+	height: 100%;
+	transition: all 0.3s 0.1s;
+}
+.a9os-main .window.with-menu > .main-content{
+    height: calc(100% - 62px);
+}
+.a9os-main .window.with-menu.fullscreen > .main-content {
+	height: calc(100% - 30px);
+	transition: all 0.3s 0.1s;
+}
+.a9os-main.mouse-drag .window > .main-content *{
+	pointer-events: none;
+}
+.window.moving .main-content:after, .window.resizing .main-content:after {
+	content: "";
+	background-color: transparent;
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	display: block;
+	z-index: 10000;
+}
+.window.moving {
+	transition: width 0.15s, height 0.15s!important;
+}
+.window.moving.aftermove.maximized{
+	transition: width 0.15s, height 0.15s, top 0.15s, left 0.15s!important;
+}
+.window.resizing {
+	transition: width 0s, height 0s!important;
+}
+
+.a9os-main .window .draggers{
+	display: inline;
+}
+.a9os-main .window .draggers > div{
+	display: block;
+	position: absolute;
+	z-index: 10000;
+	transition: all 0.1s;
+}
+
+
+.a9os-main .window .draggers .s{
+	width: 10px;
+	height: 10px;
+}
+.a9os-main .window .draggers .t, .a9os-main .window .draggers .b{
+	width: calc(100% - 10px);
+	height: 10px;
+}
+.a9os-main .window .draggers .l, .a9os-main .window .draggers .r{
+	height: calc(100% - 10px);
+	width: 10px;
+}
+.a9os-main .window .draggers .tl{ top: -5px; left: -5px; cursor: nw-resize; }
+.a9os-main .window .draggers .t{ top: -5px; left: 5px; cursor: n-resize; }
+.a9os-main .window .draggers .tr{ top: -5px; right: -5px; cursor: ne-resize; }
+.a9os-main .window .draggers .r{ top: 5px; right: -5px; cursor: e-resize; }
+.a9os-main .window .draggers .br{ bottom: -5px; right: -5px; cursor:se-resize; }
+.a9os-main .window .draggers .b{ bottom: -5px; right: 5px; cursor:s-resize; }
+.a9os-main .window .draggers .bl{ bottom: -5px; left: -5px; cursor:sw-resize; }
+.a9os-main .window .draggers .l{ bottom: 5px; left: -5px; cursor:w-resize; }
+
+.a9os-main .window.maximized.maxl .draggers .r {
+	cursor: e-resize;
+	display: block;
+}
+.a9os-main .window.maximized.maxl .draggers .r:hover {
+	display: block;
+	background-color: rgba(0,0,0,0.4);
+}
+.a9os-main .window.maximized.maxr .draggers .l {
+	cursor: w-resize;
+	display: block;
+}
+.a9os-main .window.maximized.maxr .draggers .l:hover {
+	display: block;
+	background-color: rgba(0,0,0,0.4);
+}
+
+.a9os-main .window.no-resize .draggers *, .a9os-main .window.maximized .draggers *, .a9os-main .window.fullscreen .draggers *{
+	cursor: default;
+	display: none;
+}
+
+
+.a9os-main .window .max-preview{
+	background-color:rgba(40,40,40,0.7);
+	display: block;
+	position: absolute;
+	opacity: 0;
+	visibility: hidden;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    transition: all 0.2s;
+}
+.a9os-main .window .max-preview.max{
+	position: fixed;
+	opacity: 1;
+	visibility: visible;
+}
+.a9os-main .window .max-preview.maxl{
+	position: fixed;
+	visibility: visible;
+	opacity: 1;
+	left: 0;
+	width: 50%;
+}
+.a9os-main .window .max-preview.maxr{
+	position: fixed;
+	visibility: visible;
+	opacity: 1;
+	right: 0;
+	left: auto;
+	width: 50%;
+}
+
+*[data-vf-drop-area].dragover:not([data-vf-drop-area=true]):after {
+	content: ""!important;
+	position: absolute!important;
+	top: 0!important;
+	left: 0!important;
+	width: 100%!important;
+	height: 100%!important;
+	background: rgba(0,0,0,0.3)!important;
+	box-shadow: inset 0 0 0 2px #444!important;
+	z-index: 10000;
+}
+
+.a9os-main .window .window-dragger {
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 100%;
+	height: 100%;
+}
+
+@media screen and (max-width: 650px){
+	.a9os-main .window{
+		width:100%!important;
+		height: 100%!important;
+		bottom: 0!important;
+		left: 0!important;
+		top: initial!important;
+	}
+	.a9os-main .window .window-bar{
+		position: absolute;
+		border-radius: 0;
+		bottom:0;
+		top: auto!important;
+		height: 40px;
+		white-space: nowrap;
+	}
+
+	.a9os-main .window.transparent{
+		background-color: rgba(128,128,128,0.6);
+		color: #fff;
+	}
+	.a9os-main .window.transparent > .main-content,
+	.a9os-main .window.transparent .window-bar,
+	.a9os-main .window.transparent .menu-bar{
+		backdrop-filter:none;
+		transition: backdrop-filter 0s;
+	}
+	.a9os-main .window.transparent * {
+		transition: backdrop-filter 0s;
+	}
+
+	.a9os-main .window .window-bar .left {
+		width: 40px;
+		opacity: 0;
+	}
+	.a9os-main .window .window-bar .center {
+		text-align: right;
+		width: calc(100% - 80px);
+	}
+	.a9os-main .window .window-bar .center .title {
+		margin-right: 5px;
+	}
+	.a9os-main .window .window-bar .right {
+		width: 40px;
+	}
+	.a9os-main .window .window-bar .right > div:hover {
+		background-color: rgba(0,0,0,0.25);
+	}
+	.a9os-main .window > .main-content{
+		top: 0;
+		height: calc(100% - 40px);
+	}
+	.a9os-main .window.with-menu > .main-content {
+		height: calc(100% - 70px);
+	}
+
+	.a9os-main .window .window-bar .right{
+		padding-right: 0;
+	}
+	.a9os-main .window .window-bar .right .close-button, .a9os-main .window.maximized .window-bar .right .close-button {
+		margin: 0;
+		height: 100%;
+		width: 40px;
+		background-color: rgba(0,0,0,0.25);
+		border-radius: 0;
+	}
+	.a9os-main .window .window-bar .right .max-button, .a9os-main .window .window-bar .right .min-button{
+		display: none;
+	}
+	.a9os-main .window.close{
+	    visibility: hidden;
+	    opacity: 0;
+	    transform: translateY(40px);
+	}
+	.a9os-main .window.minimized{
+		transition: all 0.4s;
+		left: 0!important;
+		transform: translateY(25%) scale(0.5);
+		top:auto!important;
+	}
+	.a9os-main .window.unminimized{
+		transition: all 0.4s;
+		transform: translateY(0) scale(1);
+	}
+	.a9os-main .window.maximized{
+		transition: all 0.1s;
+		top: 0!important;
+		left: 0!important;
+		width: 100%!important;
+		height: inherit!important; /*#!#*/
+	}
+	.a9os-main .window.maximized.maxl, .a9os-main .window.maximized.maxr{
+		width: 100%!important;
+		left: 0!important;
+	}
+
+	.a9os-main .window.maximized.maxl .draggers .r, .a9os-main .window.maximized.maxr .draggers .l, .a9os-main .window .draggers {
+		cursor: default;
+		display: none;
+	}
+
+
+	.a9os-main .window.not-highligthed {
+		transform: translateX(-50px) translateY(5px) scale(0.95);
+		opacity: 0;
+		transition: all 0.2s;
+	}
+	.a9os-main .window.not-highligthed:after {
+		opacity: 0;
+	}
+
+}

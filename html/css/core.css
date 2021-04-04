@@ -1,0 +1,498 @@
+/*_gtlsc_
+ * os.com.ar (a9os) - Open web LAMP framework and desktop environment
+ * Copyright (C) 2019-2021  Santiago Pereyra (asp95)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+body{
+	display: block;
+	min-height: 100%;
+	padding: 0;
+	margin: 0;
+	font-family: Arial, Helvetica, sans-serif;
+	overscroll-behavior: none;
+	background-size: 35%;
+	text-align: center;
+	
+	background-color: #222;
+}
+body:not(.loaded) {
+	background-color: #222;
+}
+
+
+/*"boot screen" stuff*/
+body.loading{
+	cursor: wait;
+}
+
+body .loading-splash {
+	display: inline-block;
+	position: relative;
+	width: 350px;
+	max-width: 100%;
+	margin: 0 auto;
+	color: #fff;
+	vertical-align: middle;
+}
+
+
+body.loaded .loading-splash {
+	display: none;
+}
+body .loading-splash .logo {
+	display: block;
+	background: url(/resources/a9os/img/a9os_logo.svg) center center no-repeat;
+	background-size: contain;
+	width: 100%;
+	height: 100px;
+	animation: loading-splash-logo-anim 0.6s;
+}
+body .loading-splash .loading {
+	font-size: 12px;
+	color: #666;
+	animation: loading-splash-loading-anim 1s;
+}
+body .loading-splash .loader {
+	width: 50px;
+	height: 50px;
+	margin-top: 20px;
+	box-sizing: border-box;
+	background: url(/resources/a9os/core/main/loader.svg) center center no-repeat;
+	background-size: contain;
+	border-radius: 50%;
+	display: inline-block;
+	background-color: transparent;
+	z-index: 11;
+	animation: loading 0.8s linear infinite;
+}
+
+@keyframes loading-splash-logo-anim {
+	0%,33% {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0px);
+	}
+}
+@keyframes loading-splash-loading-anim {
+	0%,90% {
+		opacity: 0;
+		transform: translateY(5px);
+	},
+	100% {
+		opacity: 1;
+		transform: translateY(0px);
+	}
+}
+body.loaded #main-content {
+	text-align: left;
+	position: absolute;
+	top: 0;
+	left: 0;
+	animation: main-cnt-open 1s;
+}
+@keyframes main-cnt-open {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+/***************/
+
+cmp{
+	display: inline;
+}
+img{
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.ibl-c:before{
+	content: "";
+	display: inline-block;
+	width: 0%;
+	height: 100%;
+	vertical-align: middle;
+}
+
+.e404-popup{
+	display: block;
+	position: absolute;
+	width: 500px;
+	height: auto;
+	margin: 25% auto 0;
+	left: 0;
+	right: 0;
+	background-color: #efefef;
+	box-sizing: border-box;
+	padding: 10px;
+	font-size: 12px;
+}
+
+.login-error{
+	display: none;
+	position: absolute;
+	width: 90%;
+	padding: 10px;
+	box-sizing: border-box;
+	color: #fff;
+	font-size: 14px;
+	background-color: #d22;
+	left: 5%;
+	top: 60px;
+	z-index: 2;
+}
+.login-error.show{
+	display: block;
+}
+
+.need-login.hide{
+	display: none!important;
+}
+.btn.loading::after{
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin-left: 10px;
+    vertical-align: middle;
+    border-top: 1px solid #222;
+    border-radius: 50%;
+    animation: loading 0.5s linear infinite;
+    transition: all 0.1s;
+}
+.btn{
+	width: auto;
+	border-radius: 3px;
+	background-color: #fff;
+	font-size: 12px;
+	margin: 0 5px 0 5px;
+	text-align: center;
+	cursor: pointer;
+	box-sizing: border-box;
+	padding: 5px 15px;
+	border: none;
+	box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+select {
+	width: auto;
+	border-radius: 3px;
+	background-color: #fff;
+	font-size: 12px;
+	margin: 0 5px 0 5px;
+	text-align: center;
+	cursor: pointer;
+	box-sizing: border-box;
+	padding: 5px 15px;
+	border: none;
+	box-shadow: 0 0 0 1px rgba(0,0,0,0.2);
+}
+
+
+@keyframes loading{
+	from{
+		transform: rotate(0deg);
+	}
+	to{
+		transform: rotate(360deg);
+	}
+}
+
+
+#svg-converter {
+	opacity: 0;
+	visibility:hidden;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 16px;
+	height: 16px;
+}
+
+
+.progress-bar {
+	display: block;
+	position: relative;
+	border-radius: 10px;
+	width: 100%;
+	background-color: rgba(0,0,0,0.2);
+	margin: 3px 0;
+	height: 20px;
+	overflow: hidden;
+}
+.progress-bar:before {
+	content: "";
+	display: block;
+	position: absolute;
+	width: 0%;
+	height: 100%;
+	border-radius: 10px;
+	background-color: rgba(0, 151, 255, 0.57);
+	backdrop-filter:invert(1) contrast(2);
+	transition: all 0.1s;
+}
+.progress-bar:after {
+	content: "";
+	color: #222;
+	font-size: 11px;
+	line-height: 11px;
+	width: 100%;
+	height: 100%;
+	margin-top: 0;
+	text-align: center;
+	display: block;
+}
+
+.progress-bar[data-percent='0']:before { width: 0%; } .progress-bar[data-percent='0']:after { content: "0%"; }
+.progress-bar[data-percent='1']:before { width: 1%; } .progress-bar[data-percent='1']:after { content: "1%"; }
+.progress-bar[data-percent='2']:before { width: 2%; } .progress-bar[data-percent='2']:after { content: "2%"; }
+.progress-bar[data-percent='3']:before { width: 3%; } .progress-bar[data-percent='3']:after { content: "3%"; }
+.progress-bar[data-percent='4']:before { width: 4%; } .progress-bar[data-percent='4']:after { content: "4%"; }
+.progress-bar[data-percent='5']:before { width: 5%; } .progress-bar[data-percent='5']:after { content: "5%"; }
+.progress-bar[data-percent='6']:before { width: 6%; } .progress-bar[data-percent='6']:after { content: "6%"; }
+.progress-bar[data-percent='7']:before { width: 7%; } .progress-bar[data-percent='7']:after { content: "7%"; }
+.progress-bar[data-percent='8']:before { width: 8%; } .progress-bar[data-percent='8']:after { content: "8%"; }
+.progress-bar[data-percent='9']:before { width: 9%; } .progress-bar[data-percent='9']:after { content: "9%"; }
+.progress-bar[data-percent='10']:before { width: 10%; } .progress-bar[data-percent='10']:after { content: "10%"; }
+.progress-bar[data-percent='11']:before { width: 11%; } .progress-bar[data-percent='11']:after { content: "11%"; }
+.progress-bar[data-percent='12']:before { width: 12%; } .progress-bar[data-percent='12']:after { content: "12%"; }
+.progress-bar[data-percent='13']:before { width: 13%; } .progress-bar[data-percent='13']:after { content: "13%"; }
+.progress-bar[data-percent='14']:before { width: 14%; } .progress-bar[data-percent='14']:after { content: "14%"; }
+.progress-bar[data-percent='15']:before { width: 15%; } .progress-bar[data-percent='15']:after { content: "15%"; }
+.progress-bar[data-percent='16']:before { width: 16%; } .progress-bar[data-percent='16']:after { content: "16%"; }
+.progress-bar[data-percent='17']:before { width: 17%; } .progress-bar[data-percent='17']:after { content: "17%"; }
+.progress-bar[data-percent='18']:before { width: 18%; } .progress-bar[data-percent='18']:after { content: "18%"; }
+.progress-bar[data-percent='19']:before { width: 19%; } .progress-bar[data-percent='19']:after { content: "19%"; }
+.progress-bar[data-percent='20']:before { width: 20%; } .progress-bar[data-percent='20']:after { content: "20%"; }
+.progress-bar[data-percent='21']:before { width: 21%; } .progress-bar[data-percent='21']:after { content: "21%"; }
+.progress-bar[data-percent='22']:before { width: 22%; } .progress-bar[data-percent='22']:after { content: "22%"; }
+.progress-bar[data-percent='23']:before { width: 23%; } .progress-bar[data-percent='23']:after { content: "23%"; }
+.progress-bar[data-percent='24']:before { width: 24%; } .progress-bar[data-percent='24']:after { content: "24%"; }
+.progress-bar[data-percent='25']:before { width: 25%; } .progress-bar[data-percent='25']:after { content: "25%"; }
+.progress-bar[data-percent='26']:before { width: 26%; } .progress-bar[data-percent='26']:after { content: "26%"; }
+.progress-bar[data-percent='27']:before { width: 27%; } .progress-bar[data-percent='27']:after { content: "27%"; }
+.progress-bar[data-percent='28']:before { width: 28%; } .progress-bar[data-percent='28']:after { content: "28%"; }
+.progress-bar[data-percent='29']:before { width: 29%; } .progress-bar[data-percent='29']:after { content: "29%"; }
+.progress-bar[data-percent='30']:before { width: 30%; } .progress-bar[data-percent='30']:after { content: "30%"; }
+.progress-bar[data-percent='31']:before { width: 31%; } .progress-bar[data-percent='31']:after { content: "31%"; }
+.progress-bar[data-percent='32']:before { width: 32%; } .progress-bar[data-percent='32']:after { content: "32%"; }
+.progress-bar[data-percent='33']:before { width: 33%; } .progress-bar[data-percent='33']:after { content: "33%"; }
+.progress-bar[data-percent='34']:before { width: 34%; } .progress-bar[data-percent='34']:after { content: "34%"; }
+.progress-bar[data-percent='35']:before { width: 35%; } .progress-bar[data-percent='35']:after { content: "35%"; }
+.progress-bar[data-percent='36']:before { width: 36%; } .progress-bar[data-percent='36']:after { content: "36%"; }
+.progress-bar[data-percent='37']:before { width: 37%; } .progress-bar[data-percent='37']:after { content: "37%"; }
+.progress-bar[data-percent='38']:before { width: 38%; } .progress-bar[data-percent='38']:after { content: "38%"; }
+.progress-bar[data-percent='39']:before { width: 39%; } .progress-bar[data-percent='39']:after { content: "39%"; }
+.progress-bar[data-percent='40']:before { width: 40%; } .progress-bar[data-percent='40']:after { content: "40%"; }
+.progress-bar[data-percent='41']:before { width: 41%; } .progress-bar[data-percent='41']:after { content: "41%"; }
+.progress-bar[data-percent='42']:before { width: 42%; } .progress-bar[data-percent='42']:after { content: "42%"; }
+.progress-bar[data-percent='43']:before { width: 43%; } .progress-bar[data-percent='43']:after { content: "43%"; }
+.progress-bar[data-percent='44']:before { width: 44%; } .progress-bar[data-percent='44']:after { content: "44%"; }
+.progress-bar[data-percent='45']:before { width: 45%; } .progress-bar[data-percent='45']:after { content: "45%"; }
+.progress-bar[data-percent='46']:before { width: 46%; } .progress-bar[data-percent='46']:after { content: "46%"; }
+.progress-bar[data-percent='47']:before { width: 47%; } .progress-bar[data-percent='47']:after { content: "47%"; }
+.progress-bar[data-percent='48']:before { width: 48%; } .progress-bar[data-percent='48']:after { content: "48%"; }
+.progress-bar[data-percent='49']:before { width: 49%; } .progress-bar[data-percent='49']:after { content: "49%"; }
+.progress-bar[data-percent='50']:before { width: 50%; } .progress-bar[data-percent='50']:after { content: "50%"; }
+.progress-bar[data-percent='51']:before { width: 51%; } .progress-bar[data-percent='51']:after { content: "51%"; }
+.progress-bar[data-percent='52']:before { width: 52%; } .progress-bar[data-percent='52']:after { content: "52%"; }
+.progress-bar[data-percent='53']:before { width: 53%; } .progress-bar[data-percent='53']:after { content: "53%"; }
+.progress-bar[data-percent='54']:before { width: 54%; } .progress-bar[data-percent='54']:after { content: "54%"; }
+.progress-bar[data-percent='55']:before { width: 55%; } .progress-bar[data-percent='55']:after { content: "55%"; }
+.progress-bar[data-percent='56']:before { width: 56%; } .progress-bar[data-percent='56']:after { content: "56%"; }
+.progress-bar[data-percent='57']:before { width: 57%; } .progress-bar[data-percent='57']:after { content: "57%"; }
+.progress-bar[data-percent='58']:before { width: 58%; } .progress-bar[data-percent='58']:after { content: "58%"; }
+.progress-bar[data-percent='59']:before { width: 59%; } .progress-bar[data-percent='59']:after { content: "59%"; }
+.progress-bar[data-percent='60']:before { width: 60%; } .progress-bar[data-percent='60']:after { content: "60%"; }
+.progress-bar[data-percent='61']:before { width: 61%; } .progress-bar[data-percent='61']:after { content: "61%"; }
+.progress-bar[data-percent='62']:before { width: 62%; } .progress-bar[data-percent='62']:after { content: "62%"; }
+.progress-bar[data-percent='63']:before { width: 63%; } .progress-bar[data-percent='63']:after { content: "63%"; }
+.progress-bar[data-percent='64']:before { width: 64%; } .progress-bar[data-percent='64']:after { content: "64%"; }
+.progress-bar[data-percent='65']:before { width: 65%; } .progress-bar[data-percent='65']:after { content: "65%"; }
+.progress-bar[data-percent='66']:before { width: 66%; } .progress-bar[data-percent='66']:after { content: "66%"; }
+.progress-bar[data-percent='67']:before { width: 67%; } .progress-bar[data-percent='67']:after { content: "67%"; }
+.progress-bar[data-percent='68']:before { width: 68%; } .progress-bar[data-percent='68']:after { content: "68%"; }
+.progress-bar[data-percent='69']:before { width: 69%; } .progress-bar[data-percent='69']:after { content: "69%"; }
+.progress-bar[data-percent='70']:before { width: 70%; } .progress-bar[data-percent='70']:after { content: "70%"; }
+.progress-bar[data-percent='71']:before { width: 71%; } .progress-bar[data-percent='71']:after { content: "71%"; }
+.progress-bar[data-percent='72']:before { width: 72%; } .progress-bar[data-percent='72']:after { content: "72%"; }
+.progress-bar[data-percent='73']:before { width: 73%; } .progress-bar[data-percent='73']:after { content: "73%"; }
+.progress-bar[data-percent='74']:before { width: 74%; } .progress-bar[data-percent='74']:after { content: "74%"; }
+.progress-bar[data-percent='75']:before { width: 75%; } .progress-bar[data-percent='75']:after { content: "75%"; }
+.progress-bar[data-percent='76']:before { width: 76%; } .progress-bar[data-percent='76']:after { content: "76%"; }
+.progress-bar[data-percent='77']:before { width: 77%; } .progress-bar[data-percent='77']:after { content: "77%"; }
+.progress-bar[data-percent='78']:before { width: 78%; } .progress-bar[data-percent='78']:after { content: "78%"; }
+.progress-bar[data-percent='79']:before { width: 79%; } .progress-bar[data-percent='79']:after { content: "79%"; }
+.progress-bar[data-percent='80']:before { width: 80%; } .progress-bar[data-percent='80']:after { content: "80%"; }
+.progress-bar[data-percent='81']:before { width: 81%; } .progress-bar[data-percent='81']:after { content: "81%"; }
+.progress-bar[data-percent='82']:before { width: 82%; } .progress-bar[data-percent='82']:after { content: "82%"; }
+.progress-bar[data-percent='83']:before { width: 83%; } .progress-bar[data-percent='83']:after { content: "83%"; }
+.progress-bar[data-percent='84']:before { width: 84%; } .progress-bar[data-percent='84']:after { content: "84%"; }
+.progress-bar[data-percent='85']:before { width: 85%; } .progress-bar[data-percent='85']:after { content: "85%"; }
+.progress-bar[data-percent='86']:before { width: 86%; } .progress-bar[data-percent='86']:after { content: "86%"; }
+.progress-bar[data-percent='87']:before { width: 87%; } .progress-bar[data-percent='87']:after { content: "87%"; }
+.progress-bar[data-percent='88']:before { width: 88%; } .progress-bar[data-percent='88']:after { content: "88%"; }
+.progress-bar[data-percent='89']:before { width: 89%; } .progress-bar[data-percent='89']:after { content: "89%"; }
+.progress-bar[data-percent='90']:before { width: 90%; } .progress-bar[data-percent='90']:after { content: "90%"; }
+.progress-bar[data-percent='91']:before { width: 91%; } .progress-bar[data-percent='91']:after { content: "91%"; }
+.progress-bar[data-percent='92']:before { width: 92%; } .progress-bar[data-percent='92']:after { content: "92%"; }
+.progress-bar[data-percent='93']:before { width: 93%; } .progress-bar[data-percent='93']:after { content: "93%"; }
+.progress-bar[data-percent='94']:before { width: 94%; } .progress-bar[data-percent='94']:after { content: "94%"; }
+.progress-bar[data-percent='95']:before { width: 95%; } .progress-bar[data-percent='95']:after { content: "95%"; }
+.progress-bar[data-percent='96']:before { width: 96%; } .progress-bar[data-percent='96']:after { content: "96%"; }
+.progress-bar[data-percent='97']:before { width: 97%; } .progress-bar[data-percent='97']:after { content: "97%"; }
+.progress-bar[data-percent='98']:before { width: 98%; } .progress-bar[data-percent='98']:after { content: "98%"; }
+.progress-bar[data-percent='99']:before { width: 99%; } .progress-bar[data-percent='99']:after { content: "99%"; }
+.progress-bar[data-percent='100']:before { width: 100%; } .progress-bar[data-percent='100']:after { content: "100%"; }
+
+
+.progress-circle {
+	display: block;
+	position: relative;
+	width: 100px;
+	height: 100px;
+	text-align: center;
+	border-radius: 50%;
+	background-color: rgba(0,0,0,0.1);
+	box-shadow: inset 0 0 25px rgba(0,0,0,0.3);
+}
+.progress-circle:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	box-shadow: inset 0 0 0 10px red;
+	mask: url(/resources/a9os/img/round-progress-mask.svg) center 0% no-repeat;
+	mask-size: 100%;
+}
+.progress-circle:after {
+	content: "";
+	color: #222;
+	font-size: 12px;
+	line-height: 14px;
+	position: absolute;
+	text-align: center;
+	left: 0;
+	width: 100%;
+	top: calc(50% - (14px / 2) );
+}
+.progress-circle[data-percent='0']:before { mask-position-y: 100%; } .progress-circle[data-percent='0']:after { content: "0%"; }
+.progress-circle[data-percent='1']:before { mask-position-y: 99%; } .progress-circle[data-percent='1']:after { content: "1%"; }
+.progress-circle[data-percent='2']:before { mask-position-y: 98%; } .progress-circle[data-percent='2']:after { content: "2%"; }
+.progress-circle[data-percent='3']:before { mask-position-y: 97%; } .progress-circle[data-percent='3']:after { content: "3%"; }
+.progress-circle[data-percent='4']:before { mask-position-y: 96%; } .progress-circle[data-percent='4']:after { content: "4%"; }
+.progress-circle[data-percent='5']:before { mask-position-y: 95%; } .progress-circle[data-percent='5']:after { content: "5%"; }
+.progress-circle[data-percent='6']:before { mask-position-y: 94%; } .progress-circle[data-percent='6']:after { content: "6%"; }
+.progress-circle[data-percent='7']:before { mask-position-y: 93%; } .progress-circle[data-percent='7']:after { content: "7%"; }
+.progress-circle[data-percent='8']:before { mask-position-y: 92%; } .progress-circle[data-percent='8']:after { content: "8%"; }
+.progress-circle[data-percent='9']:before { mask-position-y: 91%; } .progress-circle[data-percent='9']:after { content: "9%"; }
+.progress-circle[data-percent='10']:before { mask-position-y: 90%; } .progress-circle[data-percent='10']:after { content: "10%"; }
+.progress-circle[data-percent='11']:before { mask-position-y: 89%; } .progress-circle[data-percent='11']:after { content: "11%"; }
+.progress-circle[data-percent='12']:before { mask-position-y: 88%; } .progress-circle[data-percent='12']:after { content: "12%"; }
+.progress-circle[data-percent='13']:before { mask-position-y: 87%; } .progress-circle[data-percent='13']:after { content: "13%"; }
+.progress-circle[data-percent='14']:before { mask-position-y: 86%; } .progress-circle[data-percent='14']:after { content: "14%"; }
+.progress-circle[data-percent='15']:before { mask-position-y: 85%; } .progress-circle[data-percent='15']:after { content: "15%"; }
+.progress-circle[data-percent='16']:before { mask-position-y: 84%; } .progress-circle[data-percent='16']:after { content: "16%"; }
+.progress-circle[data-percent='17']:before { mask-position-y: 83%; } .progress-circle[data-percent='17']:after { content: "17%"; }
+.progress-circle[data-percent='18']:before { mask-position-y: 82%; } .progress-circle[data-percent='18']:after { content: "18%"; }
+.progress-circle[data-percent='19']:before { mask-position-y: 81%; } .progress-circle[data-percent='19']:after { content: "19%"; }
+.progress-circle[data-percent='20']:before { mask-position-y: 80%; } .progress-circle[data-percent='20']:after { content: "20%"; }
+.progress-circle[data-percent='21']:before { mask-position-y: 79%; } .progress-circle[data-percent='21']:after { content: "21%"; }
+.progress-circle[data-percent='22']:before { mask-position-y: 78%; } .progress-circle[data-percent='22']:after { content: "22%"; }
+.progress-circle[data-percent='23']:before { mask-position-y: 77%; } .progress-circle[data-percent='23']:after { content: "23%"; }
+.progress-circle[data-percent='24']:before { mask-position-y: 76%; } .progress-circle[data-percent='24']:after { content: "24%"; }
+.progress-circle[data-percent='25']:before { mask-position-y: 75%; } .progress-circle[data-percent='25']:after { content: "25%"; }
+.progress-circle[data-percent='26']:before { mask-position-y: 74%; } .progress-circle[data-percent='26']:after { content: "26%"; }
+.progress-circle[data-percent='27']:before { mask-position-y: 73%; } .progress-circle[data-percent='27']:after { content: "27%"; }
+.progress-circle[data-percent='28']:before { mask-position-y: 72%; } .progress-circle[data-percent='28']:after { content: "28%"; }
+.progress-circle[data-percent='29']:before { mask-position-y: 71%; } .progress-circle[data-percent='29']:after { content: "29%"; }
+.progress-circle[data-percent='30']:before { mask-position-y: 70%; } .progress-circle[data-percent='30']:after { content: "30%"; }
+.progress-circle[data-percent='31']:before { mask-position-y: 69%; } .progress-circle[data-percent='31']:after { content: "31%"; }
+.progress-circle[data-percent='32']:before { mask-position-y: 68%; } .progress-circle[data-percent='32']:after { content: "32%"; }
+.progress-circle[data-percent='33']:before { mask-position-y: 67%; } .progress-circle[data-percent='33']:after { content: "33%"; }
+.progress-circle[data-percent='34']:before { mask-position-y: 66%; } .progress-circle[data-percent='34']:after { content: "34%"; }
+.progress-circle[data-percent='35']:before { mask-position-y: 65%; } .progress-circle[data-percent='35']:after { content: "35%"; }
+.progress-circle[data-percent='36']:before { mask-position-y: 64%; } .progress-circle[data-percent='36']:after { content: "36%"; }
+.progress-circle[data-percent='37']:before { mask-position-y: 63%; } .progress-circle[data-percent='37']:after { content: "37%"; }
+.progress-circle[data-percent='38']:before { mask-position-y: 62%; } .progress-circle[data-percent='38']:after { content: "38%"; }
+.progress-circle[data-percent='39']:before { mask-position-y: 61%; } .progress-circle[data-percent='39']:after { content: "39%"; }
+.progress-circle[data-percent='40']:before { mask-position-y: 60%; } .progress-circle[data-percent='40']:after { content: "40%"; }
+.progress-circle[data-percent='41']:before { mask-position-y: 59%; } .progress-circle[data-percent='41']:after { content: "41%"; }
+.progress-circle[data-percent='42']:before { mask-position-y: 58%; } .progress-circle[data-percent='42']:after { content: "42%"; }
+.progress-circle[data-percent='43']:before { mask-position-y: 57%; } .progress-circle[data-percent='43']:after { content: "43%"; }
+.progress-circle[data-percent='44']:before { mask-position-y: 56%; } .progress-circle[data-percent='44']:after { content: "44%"; }
+.progress-circle[data-percent='45']:before { mask-position-y: 55%; } .progress-circle[data-percent='45']:after { content: "45%"; }
+.progress-circle[data-percent='46']:before { mask-position-y: 54%; } .progress-circle[data-percent='46']:after { content: "46%"; }
+.progress-circle[data-percent='47']:before { mask-position-y: 53%; } .progress-circle[data-percent='47']:after { content: "47%"; }
+.progress-circle[data-percent='48']:before { mask-position-y: 52%; } .progress-circle[data-percent='48']:after { content: "48%"; }
+.progress-circle[data-percent='49']:before { mask-position-y: 51%; } .progress-circle[data-percent='49']:after { content: "49%"; }
+.progress-circle[data-percent='50']:before { mask-position-y: 50%; } .progress-circle[data-percent='50']:after { content: "50%"; }
+.progress-circle[data-percent='51']:before { mask-position-y: 49%; } .progress-circle[data-percent='51']:after { content: "51%"; }
+.progress-circle[data-percent='52']:before { mask-position-y: 48%; } .progress-circle[data-percent='52']:after { content: "52%"; }
+.progress-circle[data-percent='53']:before { mask-position-y: 47%; } .progress-circle[data-percent='53']:after { content: "53%"; }
+.progress-circle[data-percent='54']:before { mask-position-y: 46%; } .progress-circle[data-percent='54']:after { content: "54%"; }
+.progress-circle[data-percent='55']:before { mask-position-y: 45%; } .progress-circle[data-percent='55']:after { content: "55%"; }
+.progress-circle[data-percent='56']:before { mask-position-y: 44%; } .progress-circle[data-percent='56']:after { content: "56%"; }
+.progress-circle[data-percent='57']:before { mask-position-y: 43%; } .progress-circle[data-percent='57']:after { content: "57%"; }
+.progress-circle[data-percent='58']:before { mask-position-y: 42%; } .progress-circle[data-percent='58']:after { content: "58%"; }
+.progress-circle[data-percent='59']:before { mask-position-y: 41%; } .progress-circle[data-percent='59']:after { content: "59%"; }
+.progress-circle[data-percent='60']:before { mask-position-y: 40%; } .progress-circle[data-percent='60']:after { content: "60%"; }
+.progress-circle[data-percent='61']:before { mask-position-y: 39%; } .progress-circle[data-percent='61']:after { content: "61%"; }
+.progress-circle[data-percent='62']:before { mask-position-y: 38%; } .progress-circle[data-percent='62']:after { content: "62%"; }
+.progress-circle[data-percent='63']:before { mask-position-y: 37%; } .progress-circle[data-percent='63']:after { content: "63%"; }
+.progress-circle[data-percent='64']:before { mask-position-y: 36%; } .progress-circle[data-percent='64']:after { content: "64%"; }
+.progress-circle[data-percent='65']:before { mask-position-y: 35%; } .progress-circle[data-percent='65']:after { content: "65%"; }
+.progress-circle[data-percent='66']:before { mask-position-y: 34%; } .progress-circle[data-percent='66']:after { content: "66%"; }
+.progress-circle[data-percent='67']:before { mask-position-y: 33%; } .progress-circle[data-percent='67']:after { content: "67%"; }
+.progress-circle[data-percent='68']:before { mask-position-y: 32%; } .progress-circle[data-percent='68']:after { content: "68%"; }
+.progress-circle[data-percent='69']:before { mask-position-y: 31%; } .progress-circle[data-percent='69']:after { content: "69%"; }
+.progress-circle[data-percent='70']:before { mask-position-y: 30%; } .progress-circle[data-percent='70']:after { content: "70%"; }
+.progress-circle[data-percent='71']:before { mask-position-y: 29%; } .progress-circle[data-percent='71']:after { content: "71%"; }
+.progress-circle[data-percent='72']:before { mask-position-y: 28%; } .progress-circle[data-percent='72']:after { content: "72%"; }
+.progress-circle[data-percent='73']:before { mask-position-y: 27%; } .progress-circle[data-percent='73']:after { content: "73%"; }
+.progress-circle[data-percent='74']:before { mask-position-y: 26%; } .progress-circle[data-percent='74']:after { content: "74%"; }
+.progress-circle[data-percent='75']:before { mask-position-y: 25%; } .progress-circle[data-percent='75']:after { content: "75%"; }
+.progress-circle[data-percent='76']:before { mask-position-y: 24%; } .progress-circle[data-percent='76']:after { content: "76%"; }
+.progress-circle[data-percent='77']:before { mask-position-y: 23%; } .progress-circle[data-percent='77']:after { content: "77%"; }
+.progress-circle[data-percent='78']:before { mask-position-y: 22%; } .progress-circle[data-percent='78']:after { content: "78%"; }
+.progress-circle[data-percent='79']:before { mask-position-y: 21%; } .progress-circle[data-percent='79']:after { content: "79%"; }
+.progress-circle[data-percent='80']:before { mask-position-y: 20%; } .progress-circle[data-percent='80']:after { content: "80%"; }
+.progress-circle[data-percent='81']:before { mask-position-y: 19%; } .progress-circle[data-percent='81']:after { content: "81%"; }
+.progress-circle[data-percent='82']:before { mask-position-y: 18%; } .progress-circle[data-percent='82']:after { content: "82%"; }
+.progress-circle[data-percent='83']:before { mask-position-y: 17%; } .progress-circle[data-percent='83']:after { content: "83%"; }
+.progress-circle[data-percent='84']:before { mask-position-y: 16%; } .progress-circle[data-percent='84']:after { content: "84%"; }
+.progress-circle[data-percent='85']:before { mask-position-y: 15%; } .progress-circle[data-percent='85']:after { content: "85%"; }
+.progress-circle[data-percent='86']:before { mask-position-y: 14%; } .progress-circle[data-percent='86']:after { content: "86%"; }
+.progress-circle[data-percent='87']:before { mask-position-y: 13%; } .progress-circle[data-percent='87']:after { content: "87%"; }
+.progress-circle[data-percent='88']:before { mask-position-y: 12%; } .progress-circle[data-percent='88']:after { content: "88%"; }
+.progress-circle[data-percent='89']:before { mask-position-y: 11%; } .progress-circle[data-percent='89']:after { content: "89%"; }
+.progress-circle[data-percent='90']:before { mask-position-y: 10%; } .progress-circle[data-percent='90']:after { content: "90%"; }
+.progress-circle[data-percent='91']:before { mask-position-y: 9%; } .progress-circle[data-percent='91']:after { content: "91%"; }
+.progress-circle[data-percent='92']:before { mask-position-y: 8%; } .progress-circle[data-percent='92']:after { content: "92%"; }
+.progress-circle[data-percent='93']:before { mask-position-y: 7%; } .progress-circle[data-percent='93']:after { content: "93%"; }
+.progress-circle[data-percent='94']:before { mask-position-y: 6%; } .progress-circle[data-percent='94']:after { content: "94%"; }
+.progress-circle[data-percent='95']:before { mask-position-y: 5%; } .progress-circle[data-percent='95']:after { content: "95%"; }
+.progress-circle[data-percent='96']:before { mask-position-y: 4%; } .progress-circle[data-percent='96']:after { content: "96%"; }
+.progress-circle[data-percent='97']:before { mask-position-y: 3%; } .progress-circle[data-percent='97']:after { content: "97%"; }
+.progress-circle[data-percent='98']:before { mask-position-y: 2%; } .progress-circle[data-percent='98']:after { content: "98%"; }
+.progress-circle[data-percent='99']:before { mask-position-y: 1%; } .progress-circle[data-percent='99']:after { content: "99%"; }
+.progress-circle[data-percent='100']:before { mask-position-y: 0%; } .progress-circle[data-percent='100']:after { content: "100%"; }

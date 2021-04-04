@@ -1,0 +1,21 @@
+<VirtualHost a9os.local:80>
+        ServerName a9os.local
+        DirectoryIndex index.html index.php
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/a9os/html
+SetEnv CONFIG_JSON '{}'
+
+        <Directory />
+                  Options FollowSymLinks Indexes
+                  AllowOverride all
+                  Require all granted
+        </Directory>
+
+        <Directory /var/www/a9os/html>
+                  Options Indexes FollowSymLinks MultiViews
+                  AllowOverride all
+                  Order allow,deny
+                  allow from all
+                  Require all granted
+        </Directory>
+</VirtualHost>

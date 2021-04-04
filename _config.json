@@ -1,0 +1,21 @@
+{
+	"core.protection.model" : {
+		"db" : {
+			"user" : "",
+			"password" : "",
+			"host" : "",
+			"db" : ""
+		},
+		"password" : {
+			"prefix" : "",
+			"suffix" : ""
+		},
+		"system_key_md5" : ""
+	},
+	"a9os.core.main" : {
+		"system_anon_mode" : "closed"
+	},
+	"a9os.app.vf.main" : {
+		"rootPath" : "/home/a9os"
+	}
+}
