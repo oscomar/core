@@ -282,8 +282,8 @@ core.setComponentData = (componentName, componentData) => {
 		var ifPrevInclude = document.querySelector("head script[data-component-name='"+componentName+"']");
 		if (ifPrevInclude && !componentData.onlyOne) ifPrevInclude.parentElement.removeChild(ifPrevInclude);
 		if (!componentData.onlyOne || !ifPrevInclude) {
- 			document.querySelector("head").appendChild(newScript);	
- 			Object.freeze(componentName);
+			document.querySelector("head").appendChild(newScript);	
+			Object.freeze(componentName);
 		}
 
 		if (componentData.onlyOne && !dataOnlyOneAdd) {
@@ -621,7 +621,11 @@ core.cookie.remove = (name) => {
 core.link = {};
 core.link.handle = (element, event) => {
 	if ((element.href.split("/")[3] == MAIN_DIR.split("/")[0] || MAIN_DIR.split("/")[0] == "") && element.href.split("/")[2] == document.location.host){
-		core.link.push(element.href);
+		if (element.href.indexOf(document.location.protocol+"//"+document.location.host+document.location.pathname) == 0 && element.href.indexOf("#") !== -1) {
+			core.link.push(element.href, {}, true);
+		} else {
+			core.link.push(element.href);
+		}
 		event.preventDefault();
 		return false;
 	} 

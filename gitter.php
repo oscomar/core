@@ -230,7 +230,8 @@ final class gitter extends gitter_common{
 			"start" => "gitter_start",
 			"addrepo" => "gitter_addrepo",
 			"makerepo" => "gitter_makerepo",
-			"help" => "gitter_help"
+			"help" => "gitter_help",
+			"touchnewcomponent" => "gitter_touchnewcomponent"
 		];
 		$commandUsed = false;
 		foreach (self::$arrCommands as $command => $model) {
@@ -757,6 +758,71 @@ final class gitter_licensor extends gitter_common {
 		}
 
 		return $arrLicenseStr;
+	}
+}
+
+
+
+class gitter_touchnewcomponent extends gitter_common {
+	public function main(){
+		global $argv;
+
+
+		$newComponentName = $argv[2];
+		$extensionList = $argv[3]??"";
+
+
+		$newComponentName = mb_strtolower($newComponentName);
+		$extensionList = mb_strtolower($extensionList);
+
+		$extensionList = explode(",", $extensionList);
+
+		$htmlBaseFolder = $this->baseDir."html/";
+
+		if (empty($extensionList)) {
+			echo "Error: Defina la lista de extensiones. \nEj: php,js,html,css,resources\n\n";
+			exit();
+		}
+
+		$arrNewComponentName = explode("_", $newComponentName);
+
+		$arrFinalCreatedItems = [];
+
+		$arrValidExtensions = ["resources", "html", "php", "js", "css"];
+		foreach ($arrValidExtensions as $k => $currValidExtension) {
+			if (!in_array($currValidExtension, $extensionList)) continue;
+
+			$tmpAggrPathToCreate = $htmlBaseFolder.$currValidExtension."/";
+
+			foreach ($arrNewComponentName as $k => $currComponentNamePart) {
+				if ($k < count($arrNewComponentName)-1) {				
+					$tmpAggrPathToCreate .= $currComponentNamePart;
+
+					if (!file_exists($tmpAggrPathToCreate)) {
+						mkdir($tmpAggrPathToCreate, 0775);
+						$arrFinalCreatedItems[] = $tmpAggrPathToCreate;
+					}
+
+					$tmpAggrPathToCreate .= "/";
+				} else {
+					if ($currValidExtension == "resources" && !file_exists($tmpAggrPathToCreate.$currComponentNamePart)) {
+						mkdir($tmpAggrPathToCreate.$currComponentNamePart, 0775);
+						$arrFinalCreatedItems[] = $tmpAggrPathToCreate.$currComponentNamePart;
+					} else if ($currValidExtension != "resources" && !file_exists($tmpAggrPathToCreate.$currComponentNamePart.".".$currValidExtension)) {
+						touch($tmpAggrPathToCreate.$currComponentNamePart.".".$currValidExtension);
+						$arrFinalCreatedItems[] = $tmpAggrPathToCreate.$currComponentNamePart.".".$currValidExtension;
+					}
+				}
+			}
+		}
+
+		echo "Items created:\n";
+		echo implode("\n", $arrFinalCreatedItems);
+		echo "\n\n";
+		return;
+	}
+	public function getHelpData(){
+		return "./gitter.php touchnewcomponent COMPONENT-NAME EXTENISONS-TO-CREATE-COMMA-SEPARATED : Creates the empty files for a new component";
 	}
 }
 

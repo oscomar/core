@@ -1426,22 +1426,41 @@ a9os_core_main.colorLogic.isLigther = (color) => {
 	}
 }
 
-a9os_core_main.colorLogic.getAverageRGB = (imgEl) => {
+a9os_core_main.colorLogic.getAverageRGB = (imgEl, qtyColors) => {
+	var qtyColors = qtyColors||1;
+	qtyColors = parseInt(qtyColors);
+
+	if (imgEl.naturalWidth > imgEl.naturalHeight) {
+		var wQtyPx = qtyColors;
+		var hQtyPx = 1;
+	} else {
+		var wQtyPx = 1;
+		var hQtyPx = qtyColors;
+	}
+
 	var canvas = document.querySelector("#svg-converter");
 	canvas = canvas.getContext("2d");
-	canvas.clearRect(0,0, 1,1);
-	canvas.drawImage(imgEl,0,0,1,1);
-	var canvasData = canvas.getImageData(0,0,1,1);
+	canvas.clearRect(0, 0, wQtyPx, hQtyPx);
+	canvas.drawImage(imgEl, 0, 0, wQtyPx, hQtyPx);
+	var canvasData = canvas.getImageData(0, 0, wQtyPx, hQtyPx);
 
+	var arrOutputColors = [];
 	var arrHex = [];
-	for (var i = 0 ; i < 3 ; i++){
-		var currTmpVal = canvasData.data[i].toString(16);
+	for (var c = 0 ; c < qtyColors*4 ; c++) {
+
+		var currTmpVal = canvasData.data[c].toString(16);
 		if (currTmpVal.length == 0) currTmpVal = "00";
 		else if (currTmpVal.length == 1) currTmpVal = "0"+currTmpVal;
 		arrHex.push(currTmpVal);
+
+		if (c % 4 == 3) {
+			arrOutputColors.push("#" + arrHex[0] + arrHex[1] + arrHex[2]);
+			arrHex = [];
+		}
 	}
 
-	return "#" + arrHex[0] + arrHex[1] + arrHex[2];
+	if (arrOutputColors.length == 1) return arrOutputColors[0];
+	return arrOutputColors;
 }
 
 

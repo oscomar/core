@@ -24,12 +24,12 @@ $mainDir = $core->getMainDir();
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-		<link rel="stylesheet" href="<?php echo $mainDir ?>/css/core.css?v=<?php echo md5(rand(20, 40));  ?>">
+		<link rel="stylesheet" href="<?php echo $mainDir ?>/css/core-<?php echo md5(rand(20, 40));  ?>.css">
 		<link type="image/png" rel="shortcut icon" href="<?php echo $mainDir ?>/resources/app-icon.png">
-		<script src="<?php echo $mainDir ?>/js/core.js?v=<?php echo md5(rand(20, 40));  ?>"></script>
-		<script>let MAIN_DIR="<?php echo $mainDir; ?>"</script>
+		<script type="text/javascript" src="<?php echo $mainDir ?>/js/core-<?php echo md5(rand(20, 40));  ?>.js"></script>
+		<script type="text/javascript">let MAIN_DIR="<?php echo $mainDir; ?>"</script>
 		<link rel="manifest" href="/resources/manifest.json">
-		<meta name="theme-color" content="#666666">
+		<meta name="theme-color" content="#888888">
 
 		<?php $core->printOgHeadData(); ?>
 	</head>

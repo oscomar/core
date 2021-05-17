@@ -37,8 +37,9 @@ $path = clearPath($core, $prePath[0]);
 
 if (isset($prePath[1])){
 	parse_str($prePath[1], $postData["getData"]);
-} 
+}
 
+header("cache-control: private");
 
 
 

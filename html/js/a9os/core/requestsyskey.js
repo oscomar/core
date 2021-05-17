@@ -107,7 +107,7 @@ a9os_core_requestsyskey.main = (data) => {
 
 
 	function cancel(msg) {
-		a9os_core_taskbar_popuparea.new(msg, "/resources/a9os/core/requestsyskey/icon.svg");
+		a9os_core_taskbar_popuparea.new(msg, "/resources/a9os/core/requestsyskey/icon.svg", "warn");
 		a9os_core_window.close();
 		if (self.jss.currRequest
 		&& self.jss.currRequest.successFinalCallback

@@ -18,17 +18,25 @@
 
 class a9os_core_main extends core_db_model {
 	const arrBaseVersion = [0, 1, 0];
-	const arrVersion = [0, 1, 5]; //SAVED IN A9OS_USER TABLEINFO
+	const arrVersion = [0, 1, 6]; //SAVED IN A9OS_USER TABLEINFO
 
 	public function main($data){
+		$systemAnonMode = $this->getCore()->getModel("a9os.core.main")->getSystemAnonMode();
+
 		if ($this->checkNeedUpdate()) {
-			$a9osCoreInstall = $this->getCore()->getModel("a9os.core.install");
-			$a9osCoreInstall->updateSystem();
+			$a9osUser = $this->getCore()->getModel("a9os.user")->getSessionUser();
+			if ($systemAnonMode == "closed" && $a9osUser->getName() == "__anon__") {
+				// do not perform update
+			} else if ($systemAnonMode == "demo"){
+				// do not perform update
+			} else {
+				$a9osCoreInstall = $this->getCore()->getModel("a9os.core.install");
+				$a9osCoreInstall->updateSystem();
+			}
 		}
 
 		$coreVersion = implode(".", $this->getCore()::arrVersion);
 		$deskVersion = implode(".", self::arrVersion);
-		$systemAnonMode = $this->getCore()->getModel("a9os.core.main")->getSystemAnonMode();
 		return [
 			"coreVersion" => $coreVersion,
 			"deskVersion" => $deskVersion,
