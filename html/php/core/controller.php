@@ -51,7 +51,27 @@ class core_controller extends core_db_model{
 
 		$postData["core_controller_id"] = $this->getID();
 
-		return $this->getCore()->getModel("core.component")->loadComponents($arrComponents, $postData);
+		$arrReturnResponseData = $this->getCore()->getModel("core.component")->loadComponents($arrComponents, $postData);
+
+		$arrReturnResponseData = $this->processSeoTags($arrReturnResponseData, $postData["inBootTime"]??false);
+
+		return $arrReturnResponseData;
+	}
+
+	private function processSeoTags($arrReturnResponseData, $inBootTime){
+		foreach ($arrReturnResponseData as $componentName => $componentData) {
+			if (!isset($componentData["data"]["seoTags"])) continue;
+			if ($inBootTime) {
+				$seoTagsModel = $this->getCore()->getModel("core.seotags");
+				$seoTagsModel->appendSeoTags($componentData["data"]["seoTags"]);
+			}
+			$componentData["seoTags"] = [];
+
+			$arrReturnResponseData[$componentName] = $componentData;
+		}
+
+
+		return $arrReturnResponseData;
 	}
 
 

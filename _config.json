@@ -15,7 +15,14 @@
 	"a9os.core.main" : {
 		"system_anon_mode" : "closed"
 	},
+	"core.clibridge" : {
+		"overridePHPExecPath" : ""
+	},
+	"core.seotags" : {
+		"title" : "os.com.ar - Una plataforma de desarrollo simple, liviana y libre."
+	},
 	"a9os.app.vf.main" : {
-		"rootPath" : "/home/a9os"
+		"rootPath" : "/home/a9os",
+		"userDiskSpaceBytes" : "10737418240"
 	}
 }

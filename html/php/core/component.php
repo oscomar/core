@@ -152,11 +152,11 @@ class core_component extends core_db_model{
 		$jsString .= "\n\n".$componentName.".__setContext = function(cd) {
 			if (window.a9os_core_main) {
 				core.sec.callOnlyFrom(".$componentName.".__setContext, {
-					whitelist : [core.rxExecute, a9os_core_main.changeWindowScope]
+					whitelist : [core.rxExecute, core.initFromBootData, a9os_core_main.changeWindowScope]
 				});
 			} else {
 				core.sec.callOnlyFrom(".$componentName.".__setContext, {
-					whitelist : [core.rxExecute]
+					whitelist : [core.rxExecute, core.initFromBootData]
 				});
 			}
 

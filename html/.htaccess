@@ -1,26 +1,7 @@
 RewriteEngine on
 Options -Indexes
 Options -MultiViews
-Header set X-Content-Type-Options "nosniff"
-Header set Content-Security-Policy "frame-ancestors 'self'"
-Header set X-Frame-Options "SAMEORIGIN"
-Header set X-XSS-Protection "1; mode=block"
-
-RewriteRule ^js\/core-(.*).js js/core.js [QSA,L]
-RewriteRule ^css\/core-(.*).css css/core.css [QSA,L]
-RewriteRule ^service\.php service.php [QSA,L]
-RewriteRule ^servwk\.js resources/servwk.js [QSA,L]
-RewriteRule ^sitemap\.xml resources/sitemap.xml [QSA,L]
-RewriteRule ^robots\.txt resources/robots.txt [QSA,L]
-RewriteRule ^resources/(.*) resources/$1 [QSA,L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^.* index.php [QSA,L]
 
 php_value upload_max_filesize 10G
 php_value post_max_size 10G
-
-<filesMatch ".(ico|jpg|jpeg|png|gif|svg)$">
-    Header set Cache-Control "max-age=43200, public"
-</filesMatch>
-

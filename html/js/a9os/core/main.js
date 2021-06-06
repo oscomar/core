@@ -145,7 +145,7 @@ a9os_core_main.changeWindowScope = (element) => { // hacer mas liviano
 	var currComponent = element;
 	if (currComponent.goToParentClass) {
 		while (currComponent = currComponent.goToParentClass("component", "cmp")){
-			var componentName = currComponent.componentName;
+			var componentName = currComponent.getAttribute("data-component-name");
 			if (!window[componentName]) continue;
 
 			window[componentName].__setContext({ component : currComponent , event : event });
@@ -281,8 +281,7 @@ a9os_core_main.showMenu = (elem, event, attributeName, originalAttrName) => {
 			&& menuItem.actionElement.parentElement 
 			&& menuItem.actionElement.parentElement.classList.contains("menu-bar")) {
 			menuComponentName = menuItem.actionElement.parentElement.parentElement
-			.querySelector(".main-content > cmp")
-			.componentName;
+			.querySelector(".main-content > cmp").getAttribute("data-component-name");
 		}
 		//////
 
@@ -300,7 +299,7 @@ a9os_core_main.showMenu = (elem, event, attributeName, originalAttrName) => {
 
 		var namePart = document.createElement("div");
 		namePart.classList.add("center");
-		namePart.textContent = itemData.name;
+		namePart.innerHTML = itemData.name;
 
 		var leftPart = document.createElement("div");
 		leftPart.classList.add("left");
@@ -623,6 +622,35 @@ a9os_core_main.moveEvent.attach = () => {
 		matchEvents : []
 	};
 
+	self.addEventListener(document, ["mouseup", "touchend", "mousedown"], (event) => {
+		//var mainDiv = event.currentTarget;
+		if (!mainDiv.boolMoveEvent) return;
+
+		for (var i = 0 ; i < mainDiv.boolMoveEvent.matchEvents.length ; i++){
+			var currMatchEvent = mainDiv.boolMoveEvent.matchEvents[i];
+
+
+			if (!currMatchEvent.isMoved) continue;
+
+			currMatchEvent.isMoved = false;
+
+			var arrArgs = [event, currMatchEvent.element].concat(currMatchEvent.extraArgs);
+			try {
+				if (currMatchEvent.endCb) currMatchEvent.endCb.apply(currMatchEvent.element, arrArgs);
+			} catch (e) {
+				console.error(e);
+			}
+			a9os_core_main.component.style.cursor = "default";
+		}
+
+		mainDiv.boolMoveEvent.preDown = false;
+		mainDiv.boolMoveEvent.initPosition = [];
+		mainDiv.boolMoveEvent.moving = false;
+		mainDiv.boolMoveEvent.matchEvents = [];
+	});
+
+
+
 	self.addEventListener(document, ["mousedown", "touchstart"], (event) => {
 		//var mainDiv = event.currentTarget;
 		var listenerName = event.listenerName;
@@ -734,7 +762,7 @@ a9os_core_main.moveEvent.attach = () => {
 					continue;
 				}
 			}
-			self.removeMenu();
+			//self.removeMenu();
 
 			//var itemCoords = currMatchEvent.element.getBoundingClientRect();
 			var itemCoords = currMatchEvent.elementStartPosition.itemCoords;
@@ -762,34 +790,7 @@ a9os_core_main.moveEvent.attach = () => {
 
 
 
-	self.addEventListener(document, ["mouseup", "touchend", "mousedown"], (event) => {
-		//var mainDiv = event.currentTarget;
-		if (!mainDiv.boolMoveEvent) return;
 
-		if (event.listenerName == "mousedown" && event.buttons != 3) return;
-
-		for (var i = 0 ; i < mainDiv.boolMoveEvent.matchEvents.length ; i++){
-			var currMatchEvent = mainDiv.boolMoveEvent.matchEvents[i];
-
-
-			if (!currMatchEvent.isMoved) continue;
-
-			currMatchEvent.isMoved = false;
-
-			var arrArgs = [event, currMatchEvent.element].concat(currMatchEvent.extraArgs);
-			try {
-				if (currMatchEvent.endCb) currMatchEvent.endCb.apply(currMatchEvent.element, arrArgs);
-			} catch (e) {
-				console.error(e);
-			}
-			a9os_core_main.component.style.cursor = "default";
-		}
-
-		mainDiv.boolMoveEvent.preDown = false;
-		mainDiv.boolMoveEvent.initPosition = [];
-		mainDiv.boolMoveEvent.moving = false;
-		mainDiv.boolMoveEvent.matchEvents = [];
-	});
 }
 
 a9os_core_main.moveEvent.add = (element, moveCb, endCb, ...extraArgs) => {
@@ -980,7 +981,8 @@ a9os_core_main.selectWindow = (componentOrWindow) => {
 
 	if (window.a9os_app_vf_desktop) {
 		var vfFilesContainer = a9os_app_vf_desktop.component.querySelector(".vf-files-container");
-		vfFilesContainer.classList.remove("selected");	
+		vfFilesContainer.classList.remove("selected");
+		a9os_app_vf_desktop.component.classList.remove("selected");
 	}
 }
 

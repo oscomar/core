@@ -31,6 +31,11 @@ class core_clibridge extends core_db_model {
 		$phpPath = shell_exec("command -v php");
 		$phpPath = trim($phpPath);
 
+		$overridePHPPath = $this->_getJsonConfig("overridePHPExecPath");
+
+		if ($overridePHPPath && !empty($overridePHPPath) && file_exists($overridePHPPath)) 
+			$phpPath = $overridePHPPath;
+
 		$rootFolder = $this->getCore()->getRootFolder();
 
 		$_core = $this->getCore();
@@ -39,7 +44,7 @@ class core_clibridge extends core_db_model {
 		$shm = shmop_open(ftok(__FILE__, 't')+getmypid(), "c", 0600, mb_strlen($jsonInternalDataToSend, "8bit"));
 		if ($shm) {
 			shmop_write($shm, $jsonInternalDataToSend, 0);
-			shmop_close($shm);
+			if (function_exists("shmop_close")) shmop_close($shm);
 		}
 
 		shell_exec($phpPath." ".$rootFolder."/cli.php ".base64_encode(__FILE__."|".getmypid())." > /dev/null");

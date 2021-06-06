@@ -49,7 +49,7 @@ $arrOutput = json_encode($arrOutput);
 $shm = shmop_open(ftok($parentFile, 't')+$parentPid, "c", 0664, mb_strlen($arrOutput, "8bit"));
 if ($shm){
 	shmop_write($shm, $arrOutput, 0);
-	shmop_close($shm);
+	if (function_exists("shmop_close")) shmop_close($shm);
 }
 
 exit();

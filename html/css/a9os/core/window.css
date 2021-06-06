@@ -492,6 +492,18 @@
 		left: 0!important;
 		top: initial!important;
 	}
+
+	.a9os-main .window:not(.top-window) {
+		opacity: 0;
+		visibility: none;
+		transition: opacity 0s, visibility 0s;
+	}
+	.a9os-main .window.top-window {
+		opacity: 1;
+		visibility: visible;
+		transition: opacity 0s, visibility 0s;
+	}
+
 	.a9os-main .window .window-bar{
 		position: absolute;
 		border-radius: 0;

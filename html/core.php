@@ -39,6 +39,10 @@ final class Core {
 			$this->checkOnlyCode($modelFile);
 			//self::$checkTime += microtime(true)-$checkTime;
 			//error_log(self::$checkTime);
+
+			unset($_SERVER["config_json"]); //remove env vars from $_SERVER
+			unset($_SERVER["CONFIG_JSON"]);
+
 			require_once $modelFile;
 		});
 
@@ -66,11 +70,12 @@ final class Core {
 	}
 
 	public function checkEnvSecurity(){
-		if ($_ENV || $_SERVER) {
+		if (!$_SERVER) {
 			$phpIniFile = php_ini_loaded_file();
-			error_log("Please disable \$_ENV and \$_SERVER env vars! in ".$phpIniFile." modify 'variables_order' to 'GPC'");
+			error_log("Sorry. Please enable \$_SERVER env var. In ".$phpIniFile." change 'variables_order' to 'GPCS' and reload Apache.");
 			exit();
 		}
+
 		if (is_readable(self::$DIR.'/../config.json')) {
 			error_log("Unsafe config.json! please set unreadable by apache user");
 			exit();
@@ -330,10 +335,25 @@ final class Core {
 	}
 
 
-	public function printOgHeadData(){
-		$ogHeadFile = self::$DIR."/html/core/oghead.html";
-		if (!file_exists($ogHeadFile)) return false;
-		echo file_get_contents($ogHeadFile)."\n";
+	public function boot() {
+		return $this->getModel("core.booter")->bootRenderPlatform();
+	}
+
+	public function clearPath($path, $preventStrtolower = false){
+		if (!$preventStrtolower) $path = mb_strtolower($path);
+		$path = str_replace("../", "/", $path);
+		$path = preg_replace('#/+#','/', $path);
+		$path = trim($path, "/");
+		$arrPath = explode("/", $path);
+		foreach ($arrPath as $k => $currPathPart) {
+			if ($currPathPart == $this->getMainDir()){
+				unset($arrPath[$k]);
+			}
+		}
+		$arrPath = array_values($arrPath);
+		$path = "/".implode("/", $arrPath);
+
+		return $path;
 	}
 
 

@@ -32,21 +32,7 @@ core.main = (fromPopState) => {
 	var maximizedInitialWindow = false;
 	if (fromPopState) maximizedInitialWindow = true;
 
-	core.sendRequest(path, pathData, {
-		fn : (response, maximizedInitialWindow, pathWindowToSelect) => {
-			core.rx(response);
 
-			if (maximizedInitialWindow && window.a9os_core_main && window.a9os_core_window) {
-				var wind0w = a9os_core_main.selectWindowByPath(pathWindowToSelect);
-				if (wind0w && !wind0w.classList.contains("no-resize")) a9os_core_window.maxmizeRestore(false, wind0w);
-			}
-		},
-		args : {
-			response : false,
-			maximizedInitialWindow : maximizedInitialWindow,
-			pathWindowToSelect : path+window.location.search+window.location.hash
-		}
-	});
 
 	window.onpopstate = () => { core.main(true) };
 	
@@ -64,6 +50,34 @@ core.main = (fromPopState) => {
 	}
 
 	core.servWk.main();
+
+
+	if (document.querySelector("head .boot-data-tag")) {
+		core.initFromBootData();
+		if (maximizedInitialWindow && window.a9os_core_main && window.a9os_core_window) {
+			var wind0w = a9os_core_main.selectWindowByPath(path+window.location.search+window.location.hash);
+			if (wind0w && !wind0w.classList.contains("no-resize")) a9os_core_window.maxmizeRestore(false, wind0w);
+		}
+	} else {	
+		core.sendRequest(path, pathData, {
+			fn : (response, maximizedInitialWindow, pathWindowToSelect) => {
+				core.rx(response);
+
+				if (maximizedInitialWindow && window.a9os_core_main && window.a9os_core_window) {
+					var wind0w = a9os_core_main.selectWindowByPath(pathWindowToSelect);
+					if (wind0w && !wind0w.classList.contains("no-resize")) a9os_core_window.maxmizeRestore(false, wind0w);
+				}
+			},
+			args : {
+				response : false,
+				maximizedInitialWindow : maximizedInitialWindow,
+				pathWindowToSelect : path+window.location.search+window.location.hash
+			}
+		});
+	}
+
+
+	//setTimeout(core.servWk.showNotification, 3000);
 
 	
 	/*var originalConsoleLog = console.log;
@@ -88,7 +102,7 @@ core.getDirectRequestUrl = (path, data) => {
 	var formData = {};
 	formData.path = path;
 	formData.data = data;
-	return MAIN_DIR+"/service.php?raw&data="+btoa(JSON.stringify(formData));
+	return MAIN_DIR+"/service?raw&data="+btoa(JSON.stringify(formData));
 }
 
 core.sendRequest = (path, data, cb, ifBlobResponse, preventLoading, cbErr, cbUplLoading) => {
@@ -105,7 +119,7 @@ core.sendRequest = (path, data, cb, ifBlobResponse, preventLoading, cbErr, cbUpl
 
 
 	core.sendXhr(
-		MAIN_DIR+"/service.php",
+		MAIN_DIR+"/service",
 		formData,
 		{
 			fn : (response, preventLoading, cb, cbErr, path) => {
@@ -201,7 +215,7 @@ core.getRequestPreventComponents = () => {// agregar los que no usan html
 	var arrComponentNames = [];
 
 	for (var i = 0 ; i < arrOnlyOneLoadedCmps.length ; i++){
-		arrComponentNames.push(arrOnlyOneLoadedCmps[i].componentName);
+		arrComponentNames.push(arrOnlyOneLoadedCmps[i].getAttribute("data-component-name"));
 	}
 
 	return arrComponentNames;
@@ -250,7 +264,7 @@ core.rxExecute = (currComponentCb) => {
 		return;
 	}
 	
-	if (currComponentCb.component){			
+	if (currComponentCb.component){
 		core.preProcess(currComponentCb.component, currComponentCb.data);
 		window[currComponentCb.componentName].__setContext({ component : currComponentCb.component , event : false });
 	}
@@ -266,6 +280,46 @@ core.rxExecute = (currComponentCb) => {
 }
 
 
+core.initFromBootData = () => {
+	var bootDataTag = document.querySelector("head .boot-data-tag");
+	var arrBootData = JSON.parse(bootDataTag.innerHTML);
+	bootDataTag.parentElement.removeChild(bootDataTag);
+
+	for (var componentName in arrBootData) {
+		var componentData = arrBootData[componentName];
+		
+		Object.freeze(componentName);
+
+		if (window[componentName] && typeof window[componentName].main !== "undefined"){
+			componentData.componentEntryPoint = window[componentName].main;
+		}
+
+		var parentComponent = document.querySelectorAll(componentData.designPath);
+		parentComponent = parentComponent[parentComponent.length-1]; //:last-child fails in selectors wth #IDs
+
+		componentData.component = (parentComponent)?parentComponent.querySelector("cmp.component."+componentName):false;
+
+		if (componentData.data && componentData.data == "__DEMO__") {
+			console.log("DEMO MODE2");
+			if (window.a9os_core_taskbar_popuparea) a9os_core_taskbar_popuparea.showDemoPopup();
+			return false;
+		}
+
+		if (componentData.component){
+			core.preProcess(componentData.component, componentData.data);
+			window[componentName].__setContext({ component : componentData.component , event : false });
+		}
+
+		if (componentData && componentData.data && componentData.onlyOne) componentData.data.__onlyOne = true;
+
+		if (componentData.componentEntryPoint) componentData.componentEntryPoint(componentData.data);
+
+	}
+
+	core.parseHrefHandlers();
+	document.body.classList.add("loaded");
+}
+
 core.setComponentData = (componentName, componentData) => {
 	if (componentName.indexOf("body ") != -1){
 		return;
@@ -277,7 +331,7 @@ core.setComponentData = (componentName, componentData) => {
 		var newScript = document.createElement("script");
 		newScript.innerHTML = componentData.js;
 		newScript.setAttribute("data-component-name", componentName);
-		newScript.componentName = componentName;
+
 		if (componentData.html != "") newScript.setAttribute("data-has-html", "true");
 		var ifPrevInclude = document.querySelector("head script[data-component-name='"+componentName+"']");
 		if (ifPrevInclude && !componentData.onlyOne) ifPrevInclude.parentElement.removeChild(ifPrevInclude);
@@ -285,7 +339,6 @@ core.setComponentData = (componentName, componentData) => {
 			document.querySelector("head").appendChild(newScript);	
 			Object.freeze(componentName);
 		}
-
 		if (componentData.onlyOne && !dataOnlyOneAdd) {
 			 newScript.setAttribute("data-only-one", "true");
 			 dataOnlyOneAdd = true;
@@ -297,7 +350,7 @@ core.setComponentData = (componentName, componentData) => {
 		var newStyle = document.createElement("style");
 		newStyle.setAttribute("data-component-name", componentName);
 		newStyle.innerHTML = componentData.css;
-		newStyle.componentName = componentName;
+
 		var ifPrevInclude = document.querySelector("head style[data-component-name='"+componentName+"']");
 		if (ifPrevInclude && !componentData.onlyOne) ifPrevInclude.parentElement.removeChild(ifPrevInclude);
 		if (!componentData.onlyOne || !ifPrevInclude) document.querySelector("head").appendChild(newStyle);
@@ -321,6 +374,10 @@ core.setComponentData = (componentName, componentData) => {
 		var parentComponent = document.querySelectorAll(componentData.designPath);
 		parentComponent = parentComponent[parentComponent.length-1]; //:last-child fails in selectors wth #IDs
 
+		if (parentComponent.isSameNode(document.querySelector("body > head"))) {
+			throw component_name + " - Design path cannot be <head>";
+		}
+
 		var alreadyOne = false;
 		if (componentData.onlyOne && parentComponent.querySelector("cmp.component."+componentName)) {
 			alreadyOne = true;
@@ -332,7 +389,6 @@ core.setComponentData = (componentName, componentData) => {
 				newComponent.classList.add("component");
 				newComponent.classList.add(componentName);
 				newComponent.setAttribute("data-component-name", componentName);
-				newComponent.componentName = componentName;
 
 				if (componentData.onlyOne && !dataOnlyOneAdd) {
 					newComponent.setAttribute("data-only-one", "true");
@@ -367,11 +423,11 @@ core.setComponentData = (componentName, componentData) => {
 		}
 	}
 
-		if (componentData.data && componentData.data == "__DEMO__") {
-			console.log("DEMO MODE2");
-			if (window.a9os_core_taskbar_popuparea) a9os_core_taskbar_popuparea.showDemoPopup();
-			return false;
-		}
+	if (componentData.data && componentData.data == "__DEMO__") {
+		console.log("DEMO MODE2");
+		if (window.a9os_core_taskbar_popuparea) a9os_core_taskbar_popuparea.showDemoPopup();
+		return false;
+	}
 
 	return compCallbackObj;
 }
@@ -565,10 +621,10 @@ core.collectComponentGarbage = () => {
 
 	for (var i = 0 ; i < arrComponentResources.length ; i++){
 
-		if (!document.querySelector("cmp.component."+arrComponentResources[i].componentName)) {
+		if (!document.querySelector("cmp.component."+arrComponentResources[i].getAttribute("data-component-name"))) {
 			arrComponentResources[i].parentElement.removeChild(arrComponentResources[i]);
 			if (arrComponentResources[i].tagName.toLowerCase() == "script") {
-				window[arrComponentResources[i].componentName] = null;
+				window[arrComponentResources[i].getAttribute("data-component-name")] = null;
 			}
 		}
 	}
@@ -972,6 +1028,21 @@ core.servWk.main = () => {
 
 	});
 }
+
+/*core.servWk.showNotification = () => {
+	Notification.requestPermission(function(result) {
+		if (result === 'granted') {
+			navigator.serviceWorker.ready.then(function(registration) {
+				registration.showNotification('Vibration Sample', {
+					body: 'Buzz! Buzz!',
+					icon: '/resources/app-icon-round-192.png',
+					vibrate: [200, 100, 200, 100, 200, 100, 200],
+					tag: 'vibration-sample'
+				});
+			});
+		}
+	});
+}*/
 
 window.addEventListener("DOMContentLoaded", core.main);
 Object.freeze(core);

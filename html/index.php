@@ -15,35 +15,126 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+ini_set("display_errors", "0");
+ini_set("upload_max_filesize", "10G");
+ini_set("post_max_size", "10G");
 require_once "core.php";
 $core = new Core();
 
-$mainDir = $core->getMainDir();
-?>
-<html lang="es">
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-		<link rel="stylesheet" href="<?php echo $mainDir ?>/css/core-<?php echo md5(rand(20, 40));  ?>.css">
-		<link type="image/png" rel="shortcut icon" href="<?php echo $mainDir ?>/resources/app-icon.png">
-		<script type="text/javascript" src="<?php echo $mainDir ?>/js/core-<?php echo md5(rand(20, 40));  ?>.js"></script>
-		<script type="text/javascript">let MAIN_DIR="<?php echo $mainDir; ?>"</script>
-		<link rel="manifest" href="/resources/manifest.json">
-		<meta name="theme-color" content="#888888">
-
-		<?php $core->printOgHeadData(); ?>
-	</head>
-	<body class="ibl-c">
-		<div class="loading-splash">
-			<div class="logo"></div>
-			<div class="loading">Cargando...</div>
-			<div class="loader"></div>
-		</div>
-		<div id="main-content"></div>
-		<canvas id="svg-converter" width="16" height="16"></canvas>
-		<!-- <div id="debugarea" style="display: block; position: fixed;color: #fff; bottom: 5px;right: 200px; width: 200px; min-height: 30px; background-color: rgba(0,0,0,0.8); padding:5px; text-align: left; font-size: 12px;word-break: break-all;"></div> -->
-	</body>
-</html>
 
 
-<?php $core->end(); ?>
+
+$arrHeaders = [
+	"X-Content-Type-Options" => "nosniff",
+	"Content-Security-Policy" => "frame-ancestors 'self'",
+	"X-Frame-Options" => "SAMEORIGIN",
+	"X-XSS-Protection" => "1; mode=block",
+	"cache-control" => "private"
+];
+foreach ($arrHeaders as $k => $h) {
+	header($k . ": " . $h);
+}
+
+
+$requestUri = $_SERVER["REQUEST_URI"];
+$prePath = explode("?", $requestUri);
+$path = $core->clearPath($prePath[0]);
+
+
+
+$arrPublicCacheControl = ["ico","jpg","jpeg","png","gif","svg"];
+foreach ($arrPublicCacheControl as $currExtension) {
+	if (strrpos($path, $currExtension) === 0) {
+		header("Cache-Control: max-age=43200, public");
+	}
+}
+
+
+
+
+if (strpos($path, "/resources") === 0) {
+	$originalCasedPath = $core->clearPath($prePath[0], true);
+	$file = $core->getRootFolder().$originalCasedPath;
+	if (!is_file($file)) {
+		http_response_code(404);
+		$core->end();
+	}
+	header("Content-Type: ".mime_content_type($file));
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/robots.txt") === 0) {
+
+	$file = $core->getRootFolder()."/resources/robots.txt";
+	header("Content-Type: ".mime_content_type($file));
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/sitemap.xml") === 0) {
+
+	$file = $core->getRootFolder()."/resources/sitemap.xml";
+	header("Content-Type: ".mime_content_type($file));
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/servwk.js") === 0) {
+	$file = $core->getRootFolder()."/resources/servwk.js";
+	header("Content-Type: "."text/javascript");
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/css/core-") === 0) {
+
+	$file = $core->getRootFolder()."/css/core.css";
+	header("Content-Type: "."text/css");
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/js/core-") === 0) {
+
+	$file = $core->getRootFolder()."/js/core.js";
+	header("Content-Type: "."text/javascript");
+	echo file_get_contents($file);
+
+} elseif (strpos($path, "/service") === 0) {
+
+	header("cache-control: private");
+
+	$postData = $_POST;
+
+	if (isset($_GET["raw"])) {
+		$postData = json_decode(base64_decode($_GET["data"]), true);
+	} else {
+		if (!isset($postData["data"])){
+			$postData["data"] = [];
+		} else {
+			$postData["data"] = json_decode($postData["data"], true);
+		}
+	}
+
+	$prePath = explode("?", $postData["path"]);
+
+	$path = $core->clearPath($prePath[0]);
+
+	if (isset($prePath[1])){
+		parse_str($prePath[1], $postData["getData"]);
+	}
+
+	$currController = $core->getModel("core.controller")->load($path, "path");
+	if (is_string($currController) && $currController == "__RELOAD__"){
+		echo $currController;
+		$core->end();
+	}
+
+	if (empty($currController->getID())){ // 404
+		$currController = $core->getModel("core.controller")->load("[404]", "path");
+		if (empty($currController->getID())) {
+			http_response_code(404);
+			$core->end();
+		}
+	}
+
+
+	echo json_encode($currController->getResponseData($postData));
+} else {
+	$core->boot();
+}
+
+
+
+$core->end();

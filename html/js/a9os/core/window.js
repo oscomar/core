@@ -495,7 +495,7 @@ a9os_core_window.close = (event, preventBackWindowSelect) => {
 
 	var baseComponent = self.component.querySelector(".main-content cmp");
 
-	var componentName = baseComponent.componentName;
+	var componentName = baseComponent.getAttribute("data-component-name");
 	if (window[componentName] 
 	&& typeof window[componentName]._closeWindow !== "undefined"){
 		a9os_core_main.selectWindow(baseComponent);
