@@ -127,7 +127,7 @@
 	backdrop-filter:blur(5px);
 	transition: backdrop-filter 0s 0.1s;
 }
-.a9os-main .window.transparent * {
+.a9os-main .window.transparent .main-content {
 	transition: backdrop-filter 0s;
 }
 

@@ -496,3 +496,14 @@ select {
 .progress-circle[data-percent='98']:before { mask-position-y: 2%; } .progress-circle[data-percent='98']:after { content: "98%"; }
 .progress-circle[data-percent='99']:before { mask-position-y: 1%; } .progress-circle[data-percent='99']:after { content: "99%"; }
 .progress-circle[data-percent='100']:before { mask-position-y: 0%; } .progress-circle[data-percent='100']:after { content: "100%"; }
+
+input[type=text].search-icon-input {
+	background: url(/resources/a9os/img/search-icon.svg) 97% 50% no-repeat;
+	background-size: 18px;
+}
+input[type=text].search-icon-input.darkbackground {
+	background-image: url(/resources/a9os/img/search-icon-white.svg);
+}
+input[type=text].search-icon-input.whiteonfocus:focus {
+	background-image: url(/resources/a9os/img/search-icon.svg);
+}
