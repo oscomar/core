@@ -20,10 +20,10 @@
 	width: 650px; /*#!#*/
 	height: 400px; /*#!#*/
 	/*overflow: hidden;*/
-	border-radius: 3px;
+	border-radius: 5px 5px 0 0;
 	top: 20px;
 	left: 20px;
-	box-shadow: 0 6px 25px -5px rgba(0,0,0,0.4);
+	box-shadow: 0 6px 20px -2px rgba(0,0,0,0.4);
 	transition: visibility 0.2s, opacity 0.2s, transform 0.2s;
 	transform: none;
 	transform-origin: left;
@@ -191,7 +191,7 @@
 	user-select: none;
 	-webkit-user-select: none;
 	-moz-user-select: -moz-none;
-	border-radius: 3px 3px 0 0;
+	border-radius: 5px 5px 0 0;
 	filter: contrast(1);
 }
 .a9os-main .window.dark-foreground .window-bar {
@@ -470,8 +470,8 @@
 	left: 0!important;
 	width: 100%!important;
 	height: 100%!important;
-	background: rgba(0,0,0,0.3)!important;
-	box-shadow: inset 0 0 0 2px #444!important;
+	background: rgba(0,0,0,0.2)!important;
+	box-shadow: inset 0 0 0 1px #444!important;
 	z-index: 10000;
 }
 
@@ -537,6 +537,7 @@
 	}
 	.a9os-main .window .window-bar .center .title {
 		margin-right: 5px;
+		font-size: 0;
 	}
 	.a9os-main .window .window-bar .right {
 		width: 40px;

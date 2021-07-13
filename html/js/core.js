@@ -16,64 +16,61 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 var core = {};
 core.main = (fromPopState) => {
+	window.onpopstate = () => { core.main(true) };
+	core.appendGoToParentClass();
+	core.servWk.main();
+
 	var path = window.location.pathname;
 	var pathData = core.parseQueryString(window.location.search);
 	
 	//A9OS mod
-	if (fromPopState
-	&& window.a9os_core_main 
-	&& a9os_core_main.selectWindowByPath(path+window.location.search+window.location.hash)) 
-		return false;
-	if (window.a9os_core_main 
-	&& a9os_core_main.selectWindowByPath(path+window.location.search+window.location.hash, true)) 
-		return false;
-	////
 
 	var maximizedInitialWindow = false;
 	if (fromPopState) maximizedInitialWindow = true;
+	////
 
-
-
-	window.onpopstate = () => { core.main(true) };
-	
-	if (!HTMLElement.prototype.goToParentClass){		
-		HTMLElement.prototype.goToParentClass = function (className, tagName){
-			if (this.tagName.toLowerCase() == "body") return false;
-			var returnElement = this.parentElement;
-			if (!returnElement) return false;
-			if (returnElement.classList.contains(className) || (tagName && tagName.toLowerCase() == returnElement.tagName && returnElement.classList.contains(className))){
-				return returnElement;
-			} else {
-				return returnElement.goToParentClass(className, tagName);
-			}
-		};
-	}
-
-	core.servWk.main();
 
 
 	if (document.querySelector("head .boot-data-tag")) {
 		core.initFromBootData();
-		if (maximizedInitialWindow && window.a9os_core_main && window.a9os_core_window) {
-			var wind0w = a9os_core_main.selectWindowByPath(path+window.location.search+window.location.hash);
-			if (wind0w && !wind0w.classList.contains("no-resize")) a9os_core_window.maxmizeRestore(false, wind0w);
-		}
-	} else {	
-		core.sendRequest(path, pathData, {
-			fn : (response, maximizedInitialWindow, pathWindowToSelect) => {
-				core.rx(response);
+		core.scopeComponentByUrl(path+window.location.search+window.location.hash);
 
-				if (maximizedInitialWindow && window.a9os_core_main && window.a9os_core_window) {
-					var wind0w = a9os_core_main.selectWindowByPath(pathWindowToSelect);
-					if (wind0w && !wind0w.classList.contains("no-resize")) a9os_core_window.maxmizeRestore(false, wind0w);
+		if (maximizedInitialWindow) {
+			var wind0w = document.querySelector(".window.top-window");
+			if (window.a9os_core_window && wind0w && !wind0w.classList.contains("no-resize")) 
+				a9os_core_window.maxmizeRestore(false, wind0w);
+		}
+
+	} else {
+		var arrActuator = document.querySelectorAll("cmp.actuator-part");
+		var actuatorUrl = false;
+
+		for (var i = arrActuator.length - 1; i >= 0; i--) {
+			if (arrActuator[i].classList.contains("with-own-url")) {
+				actuatorUrl = arrActuator[i].getAttribute("data-url");
+				break;
+			}
+		}
+
+		core.sendRequest(path, pathData, {
+			fn : (response, maximizedInitialWindow, currentUrl, arrActuator) => {
+				if (arrActuator) core.changeComponentScopesByElement(arrActuator[arrActuator.length-1], true);
+
+				core.rx(response, currentUrl);
+
+				if (maximizedInitialWindow) {
+					var wind0w = document.querySelector(".window.top-window");
+					if (window.a9os_core_window && wind0w && !wind0w.classList.contains("no-resize")) 
+						a9os_core_window.maxmizeRestore(false, wind0w);
 				}
 			},
 			args : {
 				response : false,
 				maximizedInitialWindow : maximizedInitialWindow,
-				pathWindowToSelect : path+window.location.search+window.location.hash
+				currentUrl : path+window.location.search+window.location.hash,
+				arrActuator : arrActuator
 			}
-		});
+		}, false, false, false, false, actuatorUrl);
 	}
 
 
@@ -86,6 +83,32 @@ core.main = (fromPopState) => {
 		originalConsoleLog.apply(false, args);
 	}*/
 }
+
+core.appendGoToParentClass = () => {
+	if (!HTMLElement.prototype.goToParentClass){		
+		HTMLElement.prototype.goToParentClass = function (className, tagName){
+			if (this.tagName.toLowerCase() == "body") return false;
+			var returnElement = this.parentElement;
+			if (!returnElement) return false;
+			if (returnElement.classList.contains(className) || (tagName && tagName.toLowerCase() == returnElement.tagName && returnElement.classList.contains(className))){
+				return returnElement;
+			} else {
+				return returnElement.goToParentClass(className, tagName);
+			}
+		};
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
 
 core.parseQueryString = (str) => {
 	str = str.substring(1, str.length);
@@ -105,12 +128,14 @@ core.getDirectRequestUrl = (path, data) => {
 	return MAIN_DIR+"/service?raw&data="+btoa(JSON.stringify(formData));
 }
 
-core.sendRequest = (path, data, cb, ifBlobResponse, preventLoading, cbErr, cbUplLoading) => {
+core.sendRequest = (path, data, cb, ifBlobResponse, preventLoading, cbErr, cbUplLoading, actuatorPath) => {
 	if (!preventLoading) core.loading.set();
 	var formData = new FormData();
 	formData.append("path", path);
 	formData.append("fullPath", window.location.pathname+window.location.search+window.location.hash);
-	formData.append("preventComponents", JSON.stringify(core.getRequestPreventComponents()));
+	if (actuatorPath) formData.append("actuatorPath", actuatorPath);
+	formData.append("onlyonePreventComponents", JSON.stringify(core.getOnlyonePreventComponents()));
+
 	if (data instanceof Blob) {
 		formData.append("data", data);
 	} else {
@@ -174,6 +199,7 @@ core.sendRequest = (path, data, cb, ifBlobResponse, preventLoading, cbErr, cbUpl
 	);
 }
 
+
 core.sendXhr = (url, formData, cb, cbErr, ifBlobResponse, cbUplLoading) => {
 	var x = new XMLHttpRequest();
 	x.open("POST", url, true);
@@ -210,7 +236,7 @@ core.sendXhr = (url, formData, cb, cbErr, ifBlobResponse, cbUplLoading) => {
 
 
 
-core.getRequestPreventComponents = () => {// agregar los que no usan html
+core.getOnlyonePreventComponents = () => {// agregar los que no usan html
 	var arrOnlyOneLoadedCmps = document.querySelectorAll("*[data-only-one]");
 	var arrComponentNames = [];
 
@@ -221,13 +247,20 @@ core.getRequestPreventComponents = () => {// agregar los que no usan html
 	return arrComponentNames;
 }
 
-core.rx = (response) => {
+
+
+
+
+
+
+
+core.rx = (response, currentUrl) => {
 	var arrCompCallbacks = [];
 	var arrCompCallbacksWithRequestSyskey = [];
 
 	for (var currComponentName in response) {
 		var currComponent = response[currComponentName];
-		arrCompCallbacks.push(core.setComponentData(currComponentName, currComponent));
+		arrCompCallbacks.push(core.setComponentData(currComponentName, currComponent, currentUrl));
 	}
 
 	for (var i = 0 ; i < arrCompCallbacks.length ; i++) {
@@ -279,7 +312,6 @@ core.rxExecute = (currComponentCb) => {
 
 }
 
-
 core.initFromBootData = () => {
 	var bootDataTag = document.querySelector("head .boot-data-tag");
 	var arrBootData = JSON.parse(bootDataTag.innerHTML);
@@ -320,7 +352,7 @@ core.initFromBootData = () => {
 	document.body.classList.add("loaded");
 }
 
-core.setComponentData = (componentName, componentData) => {
+core.setComponentData = (componentName, componentData, currentUrl) => {
 	if (componentName.indexOf("body ") != -1){
 		return;
 	}
@@ -390,6 +422,8 @@ core.setComponentData = (componentName, componentData) => {
 				newComponent.classList.add(componentName);
 				newComponent.setAttribute("data-component-name", componentName);
 
+				core.setComponentUrl(newComponent, currentUrl);
+
 				if (componentData.onlyOne && !dataOnlyOneAdd) {
 					newComponent.setAttribute("data-only-one", "true");
 					dataOnlyOneAdd = true;
@@ -397,6 +431,8 @@ core.setComponentData = (componentName, componentData) => {
 
 				newComponent.innerHTML = componentData.html;
 				parentComponent.appendChild(newComponent);
+
+				core.changeComponentScopesByElement(newComponent, true);
 			}
 		}
 	}
@@ -431,6 +467,13 @@ core.setComponentData = (componentName, componentData) => {
 
 	return compCallbackObj;
 }
+
+
+
+
+
+
+
 
 core.preProcess = (currComponent, data, foreachDirectChild) => {
 
@@ -611,6 +654,11 @@ core.parseHrefHandlers = () => {
 }
 
 
+
+
+
+
+
 core.reloadPage = () => {
 	window.onbeforeunload = null;
 	location.reload();
@@ -629,6 +677,13 @@ core.collectComponentGarbage = () => {
 		}
 	}
 }
+
+
+
+
+
+
+
 
 core.callCallback = (callbackFunction, arrInjectedArgs, thisArg) => {
 	if (!callbackFunction) return null;
@@ -651,6 +706,189 @@ core.callCallback = (callbackFunction, arrInjectedArgs, thisArg) => {
 	return callbackFunction.fn.apply(thisArg||null, Object.values(callbackFunction.args));
 }
 
+
+
+
+
+
+core.addEventListener = (element, listener, callback, ...extraArgs) => {
+	
+	if (!element) {
+		console.error("Element not defined");
+		return false;
+	}
+	
+	if (!NodeList.prototype.isPrototypeOf(element) && !Array.isArray(element)) {
+		addListenerInElement(element, listener, callback, extraArgs);
+	} else {
+		for (var i = 0 ; i < element.length ; i++){
+			addListenerInElement(element[i], listener, callback, extraArgs);
+		}
+	}
+
+	function addListenerInElement(element, listener, callback, extraArgs) {
+		if (!Array.isArray(listener)) {
+			addListenerInListener(element, listener, callback, extraArgs);
+		} else {
+			for (var i = 0 ; i < listener.length ; i++) {
+				addListenerInListener(element, listener[i], callback, extraArgs);
+			}
+		}
+	}
+
+	function addListenerInListener(element, listener, callback, extraArgs) {
+		var useCapture = false;
+		if (listener.indexOf("-") == listener.length-1) {
+			useCapture = true;	
+			listener = listener.slice(0, -1);
+		}
+
+		element.addEventListener(listener, (event) => {
+			event.listenerName = listener;
+			realCallback(event, callback, extraArgs);
+		}, useCapture);
+	}
+
+	function realCallback (event, callback, extraArgs) {
+		var element = event.currentTarget;
+
+		if (element == document.querySelector(".a9os-main")){ //For right menu handle
+			element = event.composedPath()[0];
+		}
+
+		var updateActuator = (event.listenerName == "click" || event.listenerName == "mousedown" || event.listenerName == "touchstart");
+
+		if (event.listenerName != "componentsetcontext") core.changeComponentScopesByElement(element, updateActuator);
+
+		var arrArgs = [event, element].concat(extraArgs);
+		callback.apply(element, arrArgs);
+	}
+}
+core.changeComponentScopesByElement = (element, updateActuator) => {
+	
+	var arrSelectWindowCalls = []; //agarro todos los _selectWindow, para ejecutarlos al revés
+
+	if (element.tagName && element.tagName.toLowerCase() == "cmp") element = element.childNodes[0];
+
+	var currComponent = element;
+	if (!currComponent.goToParentClass) return;
+
+
+	var urlSet = false;
+
+	var arrCurrentActuatorPath = [];
+
+	while (currComponent = currComponent.goToParentClass("component", "cmp")){
+		var componentName = currComponent.getAttribute("data-component-name");
+
+
+		if (updateActuator
+		&& currComponent.classList.contains("with-own-url") 
+		&& currComponent.hasAttribute("data-url") 
+		&& !urlSet) {
+
+			urlSet = true;
+			core.link.push(currComponent.getAttribute("data-url"), {}, true);
+
+		}
+
+		if (updateActuator) {
+			arrCurrentActuatorPath.push(currComponent);
+			currComponent.classList.add("actuator-part");
+		}
+
+		if (!window[componentName]) continue;
+		window[componentName].__setContext({ component : currComponent , event : event });
+
+		if (typeof window[componentName]._selectWindow !== "undefined") {
+			arrSelectWindowCalls.push(window[componentName]._selectWindow);
+		}
+
+		if (updateActuator) core.pushCustomEvent(currComponent, "componentsetcontext");
+	}
+
+	if (updateActuator) {
+		var arrActuatorPartClassedCmps = document.querySelectorAll("cmp.actuator-part");
+		for (var i = 0 ; i < arrActuatorPartClassedCmps.length ; i++) {
+			var currActuatorPartClassedCmp = arrActuatorPartClassedCmps[i];
+
+			var isPartOfCurrentActuator = false;
+			for (var x = 0 ; x < arrCurrentActuatorPath.length ; x++) {
+				var currCurrentActuatorPath = arrCurrentActuatorPath[x];
+				if (currActuatorPartClassedCmp.isSameNode(currCurrentActuatorPath)) {
+					isPartOfCurrentActuator = true;
+					break;
+				}
+			}
+
+			if (!isPartOfCurrentActuator) currActuatorPartClassedCmp.classList.remove("actuator-part");
+		}
+	}
+
+	for (var i = arrSelectWindowCalls.length - 1; i >= 0; i--) {
+		arrSelectWindowCalls[i]();
+	}
+
+	return element;
+}
+core.setComponentUrl = (component, url) => {
+	component.classList.add("with-own-url");
+	component.setAttribute("data-url", url);
+
+	return component;
+}
+core.setUrlByActuatorPart = (url) => {
+	var arrActuatorPart = document.querySelectorAll("cmp.actuator-part.with-own-url:not([data-url='/'])");
+	if (arrActuatorPart.length == 0) return;
+	arrActuatorPart[arrActuatorPart.length - 1].setAttribute("data-url", url);
+
+}
+core.removeComponentUrlHandle = (component) => {
+	component.classList.remove("with-own-url");
+	component.removeAttribute("data-url");
+}
+
+core.scopeComponentByUrl = (url) => {
+	var cmpByUrl = document.querySelectorAll("cmp.with-own-url[data-url='"+url+"']");
+	if (cmpByUrl.length == 0) return false;
+
+	cmpByUrl = cmpByUrl[cmpByUrl.length - 1];
+
+	core.changeComponentScopesByElement(cmpByUrl, true);
+
+	return cmpByUrl;
+}
+
+
+core.pushCustomEvent = (element, eventName, eventDetail) => {
+	
+	var customEvent = new CustomEvent(eventName, { detail : eventDetail });
+	element.dispatchEvent(customEvent);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 core.getRandomId = (arrToCompareUnique, fromIndexes, length) => {
 	var length = length||5;
 	var arrToCompareUnique = arrToCompareUnique||[];
@@ -667,10 +905,19 @@ core.getRandomId = (arrToCompareUnique, fromIndexes, length) => {
 	return newRnd;
 }
 
+
+
+
+
+
 core.cookie = {};
 core.cookie.remove = (name) => {
 	document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;';
 }
+
+
+
+
 
 
 
@@ -691,6 +938,10 @@ core.link.handle = (element, event) => {
 core.link.push = (url, hashData, preventInitLoop, pushToHistory) => {
 	var hashString = core.link.hash.arrayToQueryString(hashData);
 	if ((url+hashString).length > 2048) console.error("URL max length exceeded");
+
+
+	if (url+hashString == window.location.pathname+window.location.search+window.location.hash
+	&& preventInitLoop) return;
 	
 	if (!pushToHistory) history.replaceState({}, "", url+hashString);
 	else history.pushState({}, "", url+hashString);
@@ -728,7 +979,7 @@ core.link.favicon = (imgElOrUrl) => {
 				loadedImgDiv : imgElOrUrl
 			});
 		} else {
-			a9os_core_main.addEventListener(imgElOrUrl, "load", (e, img, imgToCanvasToHeadFn) => {
+			core.addEventListener(imgElOrUrl, "load", (e, img, imgToCanvasToHeadFn) => {
 				core.callCallback(imgToCanvasToHeadFn, {
 					loadedImgDiv : img
 				});
@@ -742,7 +993,7 @@ core.link.favicon = (imgElOrUrl) => {
 				fn : (response, imgToCanvasToHeadFn) => {
 					var img = document.createElement("img");
 					img.src = a9os_app_vf_main.fileHandle.getBlobUrl(response.response);
-					a9os_core_main.addEventListener(img, "load", (e, img, imgToCanvasToHeadFn) => {
+					core.addEventListener(img, "load", (e, img, imgToCanvasToHeadFn) => {
 						core.callCallback(imgToCanvasToHeadFn, {
 							loadedImgDiv : img
 						});
@@ -774,7 +1025,8 @@ core.link.hash.set = (arrNewData) => {
 
 	var finalString = core.link.hash.arrayToQueryString(arrHashData);
 
-	if (window.a9os_core_window) a9os_core_window.setUrl(window.location.pathname+finalString);
+	core.setUrlByActuatorPart(window.location.pathname+finalString);
+
 	core.link.push(window.location.pathname+finalString, {}, true);
 }
 
@@ -821,6 +1073,15 @@ core.link.hash._isJson = (str) => {
 }
 
 
+
+
+
+
+
+
+
+
+
 core.loading = {};
 core.loading.qtyLoadings = 0;
 core.loading.set = () => {
@@ -834,6 +1095,11 @@ core.loading.unset = () => {
 	if (core.loading.qtyLoadings < 0) core.loading.qtyLoadings = 0;
 	if (core.loading.qtyLoadings == 0) document.body.classList.remove("loading");
 }
+
+
+
+
+
 
 core.devToolsSec = {};
 core.devToolsSec.started = false;
@@ -870,6 +1136,13 @@ core.devToolsSec.start = () => {
 	}, 100, img);
 }
 // core.devToolsSec.start();
+
+
+
+
+
+
+
 
 
 core.asyncGear = {};
@@ -979,6 +1252,12 @@ core.asyncGear.reappendId.getById = (reappendId, callbackFunction) => {
 }
 
 
+
+
+
+
+
+
 core.sec = {};
 core.sec.callOnlyFrom = (originFunction, arrBlWl) => {
 	var originFunctionHashCode = core.sec.stringHashCode(originFunction.caller.toString());
@@ -1018,6 +1297,11 @@ core.sec.stringHashCode = (str) => {
 	// FROM https://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
 }
 
+
+
+
+
+
 core.servWk = {};
 core.servWk.main = () => {
 	if ("serviceWorker" in navigator) {
@@ -1043,6 +1327,10 @@ core.servWk.main = () => {
 		}
 	});
 }*/
+
+
+
+
 
 window.addEventListener("DOMContentLoaded", core.main);
 Object.freeze(core);

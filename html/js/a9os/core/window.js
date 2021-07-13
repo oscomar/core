@@ -22,13 +22,18 @@ a9os_core_window.main = function (data) {
 		 return;	
 	}
 
+	var mainContentCmp = wind0w.querySelector(".main-content cmp");
+	core.setComponentUrl(self.component, mainContentCmp.getAttribute("data-url"));
+
+	core.removeComponentUrlHandle(mainContentCmp);
+
 	wind0w.style.zIndex = a9os_core_main.component.querySelectorAll(".a9os_core_window").length;
 	self.attachMoveEvent();
 	self.attachResizeEvent();
 	self.attachControlsEvent();
 	self.attachSelectionEvent();
 	self.attachDocumentResizeEvent();
-	self.setUrl(data.fullPath);
+	//self.setUrl(data.fullPath);
 
 
 	setTimeout((wind0w) => {
@@ -98,14 +103,6 @@ a9os_core_window.setWindowInitialPosition = (wind0w) => {
 
 	a9os_core_main.component.windowOpenPos++;
 	if (a9os_core_main.component.windowOpenPos == 5) a9os_core_main.component.windowOpenPos = 1;
-}
-
-a9os_core_window.setUrl = (url) => {
-//	debugger;
-	a9os_core_window.component.setAttribute("data-url", url);
-	if (url != window.location.pathname){
-		core.link.push(url, {}, true);
-	}
 }
 
 a9os_core_window.processWindowData = function (data, arrShortcuts, arrMenuCustomActions){
@@ -215,8 +212,8 @@ a9os_core_window.attachMoveEvent = () => {
 	var fromRestore = false;
 	var restorePercent = 0;
 
-	a9os_core_main.addEventListener(self.component.querySelectorAll(".window-bar, .menu-bar, .window-dragger"), "mousedown", tmpMoving, wind0w);
-	a9os_core_main.addEventListener(self.component.querySelectorAll(".window-bar, .menu-bar, .window-dragger"), "touchstart", tmpMoving, wind0w);
+	core.addEventListener(self.component.querySelectorAll(".window-bar, .menu-bar, .window-dragger"), "mousedown", tmpMoving, wind0w);
+	core.addEventListener(self.component.querySelectorAll(".window-bar, .menu-bar, .window-dragger"), "touchstart", tmpMoving, wind0w);
 	function tmpMoving(e,r,w) {
 		w.classList.add("moving");
 		setTimeout((w) => {
@@ -326,27 +323,27 @@ a9os_core_window.attachResizeEvent = () => {
 
 
 	var windowBar = wind0w.querySelectorAll(".window-bar, .window-dragger");
-	a9os_core_main.addEventListener(windowBar, "dblclick", (event, windowBar, wind0w) => {
+	core.addEventListener(windowBar, "dblclick", (event, windowBar, wind0w) => {
 		if (wind0w.classList.contains("no-resize")) return;
 		wind0w.classList.remove("moving");
 		self.maxmizeRestore(event, wind0w);
 	}, wind0w);
 
-	a9os_core_main.addEventListener(arrResizers, "mousedown", (e,r,w) => {
+	core.addEventListener(arrResizers, "mousedown", (e,r,w) => {
 		w.classList.add("resizing");
 	}, wind0w);
-	a9os_core_main.addEventListener(arrResizers, "touchstart", (e,r,w) => {
+	core.addEventListener(arrResizers, "touchstart", (e,r,w) => {
 		w.classList.add("resizing");
 	}, wind0w);
 
-	a9os_core_main.addEventListener(arrResizers, "dblclick", (e,r,w) => {
+	core.addEventListener(arrResizers, "dblclick", (e,r,w) => {
 		if (w.classList.contains("maxl") || w.classList.contains("maxr")) {
 			self.resizeChangeMaxlMaxr(wind0w, -1);
 		}
 	}, wind0w);
 
-	a9os_core_main.addEventListener(arrResizers, "mousedown", tmpResizing, wind0w);
-	a9os_core_main.addEventListener(arrResizers, "touchstart", tmpResizing, wind0w);
+	core.addEventListener(arrResizers, "mousedown", tmpResizing, wind0w);
+	core.addEventListener(arrResizers, "touchstart", tmpResizing, wind0w);
 	function tmpResizing(e,r,w) {
 		w.classList.add("resizing");
 		setTimeout((w) => {
@@ -482,11 +479,11 @@ a9os_core_window.resizeChangeMaxlMaxr = (wind0w, newWidth) => {
 
 a9os_core_window.attachControlsEvent = () => {
 	
-	a9os_core_main.addEventListener(self.component.querySelector(".window .window-bar .close-button"), "click", () => {
+	core.addEventListener(self.component.querySelector(".window .window-bar .close-button"), "click", () => {
 		self.close();
 	});
-	a9os_core_main.addEventListener(self.component.querySelector(".window .window-bar .max-button"), "click", self.maxmizeRestore);
-	a9os_core_main.addEventListener(self.component.querySelector(".window .window-bar .min-button"), "click", self.minimize);
+	core.addEventListener(self.component.querySelector(".window .window-bar .max-button"), "click", self.maxmizeRestore);
+	core.addEventListener(self.component.querySelector(".window .window-bar .min-button"), "click", self.minimize);
 	self.component.querySelectorAll(".window .window-bar .right > *").forEach((elem) => { elem.addEventListener("mousedown", (event) => { event.stopPropagation(); })});
 }
 
@@ -538,11 +535,8 @@ a9os_core_window.maxmizeRestore = (event, wind0wOrButton) => {
 }
 
 a9os_core_window.attachSelectionEvent = () => {
-	
-	var wind0w = self.component.querySelector(".window");
-
-	a9os_core_main.addEventListener(wind0w, "mousedown", (event, wind0w) => {
-		a9os_core_main.selectWindow(wind0w);
+	core.addEventListener(self.component, "componentsetcontext", (event, component) => {
+		a9os_core_main.selectWindow(component.querySelector(".window"), true);
 	});
 }
 
@@ -557,12 +551,14 @@ a9os_core_window.createTaskbarItem = (data, arrMenuCustomActions) => {
 	a9os_core_window.component.querySelector(".window").setAttribute("data-taskbar-item-id", itemId);
 }
 
-a9os_core_window.minimize = (event) => {
-	
-	a9os_core_main.removeMenu();
-	
-	var wind0w = event.currentTarget.goToParentClass("window");
-	a9os_core_window.minimizeWindow(wind0w);
+a9os_core_window.minimize = (event, minButton) => {
+	setTimeout((minButton) => {
+		a9os_core_main.removeMenu();
+		
+		var wind0w = minButton.goToParentClass("window");
+		a9os_core_window.minimizeWindow(wind0w);
+
+	}, 0, minButton);
 }
 
 a9os_core_window.minimizeWindow = (wind0w) => {
@@ -601,9 +597,14 @@ a9os_core_window.setMinimizeCssVars = (item, wind0w) => {
 }
 
 a9os_core_window.setMenuBar = (arrMenu) => {
-	
+
 	var wind0w = a9os_core_window.component.querySelector(".window");
-	wind0w.classList.add("with-menu");
+
+	if (Object.keys(arrMenu) != 0) {
+		wind0w.classList.add("with-menu");
+	}
+
+	wind0w.querySelector(".menu-bar").innerHTML = "";
 
 	for (var itemName in arrMenu){
 		var currItemMenu = arrMenu[itemName];
@@ -612,7 +613,7 @@ a9os_core_window.setMenuBar = (arrMenu) => {
 		newItem.classList.add("item");
 		newItem.textContent = itemName;
 		newItem.setAttribute("data-menu-bar", JSON.stringify(currItemMenu));
-		a9os_core_main.addEventListener(newItem, "mousedown", (event, item) => {
+		core.addEventListener(newItem, "mousedown", (event, item) => {
 			event.stopPropagation();
 			var menuBar = newItem.parentElement;
 			if (menuBar.getAttribute("data-active") == "false") {
@@ -626,7 +627,7 @@ a9os_core_window.setMenuBar = (arrMenu) => {
 				a9os_core_main.removeMenu();
 			}
 		});
-		a9os_core_main.addEventListener(newItem, "mouseover", (event, item) => {
+		core.addEventListener(newItem, "mouseover", (event, item) => {
 			if (item.parentElement.getAttribute("data-active") == "true" && !item.classList.contains("active")){
 				item.parentElement.querySelectorAll(".item.active").forEach((i) => {
 					i.classList.remove("active");
@@ -639,6 +640,24 @@ a9os_core_window.setMenuBar = (arrMenu) => {
 
 		wind0w.querySelector(".menu-bar").appendChild(newItem);
 	}
+}
+
+a9os_core_window.getMenuBar = () => {
+	var wind0w = a9os_core_window.component.querySelector(".window");
+
+	if (!wind0w.classList.contains("with-menu")) return false;
+
+	var arrMenuItems = wind0w.querySelectorAll(".menu-bar .item");
+
+	var arrOutput = {};
+
+	for (var i = 0 ; i < arrMenuItems.length ; i++) {
+		var currMenuItem = arrMenuItems[i];
+
+		arrOutput[currMenuItem.textContent] = JSON.parse(currMenuItem.getAttribute("data-menu-bar"));
+	}
+
+	return arrOutput;
 }
 
 a9os_core_window.unsetMenuBarUsed = () => {
@@ -659,14 +678,14 @@ a9os_core_window.checkResponsive = (wind0w) => {
 		wind0w.classList.remove("is-mobile");
 	}
 
-	a9os_core_main.pushCustomEvent(wind0w, "wind0wrezise", {
+	core.pushCustomEvent(wind0w, "wind0wrezise", {
 		isMobile : self.isMobile(wind0w)
 	});
 
 	if (wind0w.boolMobileChange != self.isMobile(wind0w)) {
 		wind0w.boolMobileChange = self.isMobile(wind0w);
 
-		a9os_core_main.pushCustomEvent(wind0w, "wind0waltermobile", {
+		core.pushCustomEvent(wind0w, "wind0waltermobile", {
 			isMobile : wind0w.boolMobileChange
 		});
 	}

@@ -1,10 +1,10 @@
 {
 	"core.protection.model" : {
 		"db" : {
-			"user" : "",
-			"password" : "",
-			"host" : "",
-			"db" : ""
+			"user" : "oscomar",
+			"password" : "passw0rd",
+			"host" : "localhost",
+			"db" : "a9os"
 		},
 		"password" : {
 			"prefix" : "",
@@ -13,13 +13,13 @@
 		"system_key_md5" : ""
 	},
 	"a9os.core.main" : {
-		"system_anon_mode" : "closed"
+		"system_anon_mode" : "open"
 	},
 	"core.clibridge" : {
 		"overridePHPExecPath" : ""
 	},
 	"core.seotags" : {
-		"title" : "os.com.ar - Una plataforma de desarrollo simple, liviana y libre."
+		"title" : "os.com.ar - Web Desktop"
 	},
 	"a9os.app.vf.main" : {
 		"rootPath" : "/home/a9os",

@@ -44,14 +44,31 @@ class core_controller extends core_db_model{
 		return $this;
 	}
 	public function getResponseData($postData){
-		$arrComponents = [];
+		$arrComponentIds = [];
+
+		$arrControllerComponents = [];
+		$controllerHasAggregative = false;
+
 		while($currControllerComponent = $this->getComponentCollection()->fetch()){
-			$arrComponents[] = $currControllerComponent->getCoreComponentId();
+			$arrControllerComponents[] = $currControllerComponent;
+
+			if (!is_null($currControllerComponent->getAggregativeActuatorControllerId()))
+				$controllerHasAggregative = true;
+
+
+			$arrComponentIds[] = $currControllerComponent->getCoreComponentId();
 		}
 
 		$postData["core_controller_id"] = $this->getID();
 
-		$arrReturnResponseData = $this->getCore()->getModel("core.component")->loadComponents($arrComponents, $postData);
+		if (isset($postData["actuatorPath"]) 
+		&& !empty($postData["actuatorPath"])
+		&& $controllerHasAggregative) {
+			$coreControllerComponent = $this->getCore()->getModel("core.controller.component");
+			$arrComponentIds = $coreControllerComponent->filterComponentsByActuatorController($postData["actuatorPath"], $arrControllerComponents, $arrComponentIds);
+		}
+
+		$arrReturnResponseData = $this->getCore()->getModel("core.component")->loadComponents($arrComponentIds, $postData);
 
 		$arrReturnResponseData = $this->processSeoTags($arrReturnResponseData, $postData["inBootTime"]??false);
 

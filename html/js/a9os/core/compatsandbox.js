@@ -25,7 +25,7 @@ a9os_core_compatsandbox.use = (compatPath, postImportFn) => {
 
 		var newIframe = document.createElement("iframe");
 
-		a9os_core_main.addEventListener(newIframe, "load", (event, newIframe, compatPath) => {
+		core.addEventListener(newIframe, "load", (event, newIframe, compatPath) => {
 			self.resolveIframeLoad(compatPath);
 		}, compatPath);
 

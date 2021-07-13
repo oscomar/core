@@ -62,10 +62,10 @@
 	position: fixed;
 	z-index: 1010;
 	background-color: rgba(40,40,40,0.75);
-	backdrop-filter:blur(5px);
+	backdrop-filter:blur(10px) contrast(1.25);
 	box-sizing: border-box;
 	padding: 3px 0;
-	border-radius: 2px;
+	border-radius: 4px;
 	box-shadow: 0 0 2px rgba(0,0,0,0.8);
 	color: #fff;
 

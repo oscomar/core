@@ -184,6 +184,10 @@ class core_booter extends core_mainobject{
 				}
 			}
 
+			//a9os_core_window multiwindow cmp aggregation, only one window at boot time
+			$componentData["designPath"] = str_replace(".top-window", "", $componentData["designPath"]);
+			
+
 			$parentComponent = $domQuerySelector->select($componentData["designPath"]);
 			if (is_array($parentComponent)) $parentComponent = $parentComponent[count($parentComponent)-1]; //:last-child fails in selectors wth #IDs
 
@@ -198,8 +202,19 @@ class core_booter extends core_mainobject{
 			if ($componentData["html"] != ""){
 				if (!$componentData["onlyOne"] ||  !$domQuerySelector->select("cmp.component.".$componentName, $parentComponent)){
 					$newComponent = $DOMDocument->createElement("cmp");
-					$newComponent->setAttribute("class", "component ".$componentName);
+
+					$withOwnUrlStr = " ";
+
+					if ($componentData["componentUrl"] != "") {
+						$newComponent->setAttribute("data-url", $componentData["componentUrl"]);
+						$withOwnUrlStr = " with-own-url";
+
+					}
+
+					$newComponent->setAttribute("class", "component ".$componentName.$withOwnUrlStr." actuator-part");
 					$newComponent->setAttribute("data-component-name", $componentName);
+
+
 
 					if ($componentData["onlyOne"] && !$dataOnlyOneAdd) {
 						$newComponent->setAttribute("data-only-one", "true");

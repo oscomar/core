@@ -48,7 +48,8 @@ final class core_db_tablehandle extends core_db_model{
 			$name = mb_strtolower($name);
 			$name = trim($name);
 			if (in_array($name, $this->arrCurrentFields)) {
-				throw new Exception("addField: campo existente");
+				error_log("addField: ".$name." - campo existente");
+				return false;
 			}
 		}
 
@@ -107,6 +108,8 @@ final class core_db_tablehandle extends core_db_model{
 			$this->setTableCreated(true);
 		}
 
+
+		//error_log($queryStr);
 
 
 		if (!$this->_query($queryStr)){
@@ -249,8 +252,11 @@ final class core_db_tablehandle extends core_db_model{
 			$arrFields[$k] = "`".trim(mb_strtolower($currKey))."`";
 		}
 
+		$btreeStr = " USING BTREE";
+		if (strtolower($indexType) == "fulltext") $btreeStr = "";
 
-		return $indexTypeStr."INDEX `".$name."` (".implode(", ", $arrFields).") USING BTREE";
+
+		return $indexTypeStr."INDEX `".$name."` (".implode(", ", $arrFields).")".$btreeStr;
 	}
 
 

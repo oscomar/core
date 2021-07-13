@@ -86,96 +86,14 @@ a9os_core_main.main = (data) => {
 	}
 }
 
-a9os_core_main.addEventListener = (element, listener, callback, ...extraArgs) => {
-	
-	if (!element) {
-		console.error("Element not defined");
-		return false;
-	}
-	
-	if (!NodeList.prototype.isPrototypeOf(element) && !Array.isArray(element)) {
-		addListenerInElement(element, listener, callback, extraArgs);
-	} else {
-		for (var i = 0 ; i < element.length ; i++){
-			addListenerInElement(element[i], listener, callback, extraArgs);
-		}
-	}
 
-	function addListenerInElement(element, listener, callback, extraArgs) {
-		if (!Array.isArray(listener)) {
-			addListenerInListener(element, listener, callback, extraArgs);
-		} else {
-			for (var i = 0 ; i < listener.length ; i++) {
-				addListenerInListener(element, listener[i], callback, extraArgs);
-			}
-		}
-	}
 
-	function addListenerInListener(element, listener, callback, extraArgs) {
-		var useCapture = false;
-		if (listener.indexOf("-") == listener.length-1) {
-			useCapture = true;	
-			listener = listener.slice(0, -1);
-		}
-
-		element.addEventListener(listener, (event) => {
-			event.listenerName = listener;
-			realCallback(event, callback, extraArgs);
-		}, useCapture);
-	}
-
-	function realCallback (event, callback, extraArgs) {
-		var element = event.currentTarget;
-
-		if (element == document.querySelector(".a9os-main")){ //For right menu handle
-			element = event.composedPath()[0];
-		}
-
-		self.changeWindowScope(element);
-		var arrArgs = [event, element].concat(extraArgs);
-		callback.apply(element, arrArgs);
-	}
-}
-a9os_core_main.changeWindowScope = (element) => { // hacer mas liviano
-	
-	var arrSelectWindowCalls = []; //agarro todos los _selectWindow, para ejecutarlos al revés
-
-	if (element.tagName && element.tagName.toLowerCase() == "cmp") element = element.childNodes[0];
-
-	var currComponent = element;
-	if (currComponent.goToParentClass) {
-		while (currComponent = currComponent.goToParentClass("component", "cmp")){
-			var componentName = currComponent.getAttribute("data-component-name");
-			if (!window[componentName]) continue;
-
-			window[componentName].__setContext({ component : currComponent , event : event });
-
-			if (typeof window[componentName]._selectWindow !== "undefined") {
-				arrSelectWindowCalls.push(window[componentName]._selectWindow);
-			}
-		}
-	}
-
-	for (var i = arrSelectWindowCalls.length - 1; i >= 0; i--) {
-		arrSelectWindowCalls[i]();
-	}
-
-	return element;
-}
-
-a9os_core_main.pushCustomEvent = (element, eventName, eventDetail) => {
-	
-	var customEvent = new CustomEvent(eventName, { detail : eventDetail });
-	element.dispatchEvent(customEvent);
-}
 
 
 
 a9os_core_main.showMenuR = (elem, event) => {
-	
 	return self.showMenu(elem, event, "data-menu-r");
 }
-
 a9os_core_main.showMenu = (elem, event, attributeName, originalAttrName) => {
 	
 	var attributeName = attributeName || "data-menu";
@@ -343,11 +261,11 @@ a9os_core_main.showMenu = (elem, event, attributeName, originalAttrName) => {
 			menuItem.setAttribute("data-menu", JSON.stringify(itemData.children));
 		}
 
-		self.addEventListener(menuItem, "mousedown", (event, menuItem) => {
+		core.addEventListener(menuItem, "mousedown", (event, menuItem) => {
 			event.stopPropagation();
 		});
 
-		self.addEventListener(menuItem, ["mouseenter", "touchstart"], (event, menuItem) => {
+		core.addEventListener(menuItem, ["mouseenter", "touchstart"], (event, menuItem) => {
 			menuItem.parentElement.querySelectorAll(".menu-item").forEach((currItem) => {
 				currItem.classList.remove("selected");
 			});
@@ -373,12 +291,12 @@ a9os_core_main.showMenu = (elem, event, attributeName, originalAttrName) => {
 			}
 		});
 
-		self.addEventListener(menuItem, ["mouseout", "touchleave"], (event, menuItem) => {
+		core.addEventListener(menuItem, ["mouseout", "touchleave"], (event, menuItem) => {
 			if (!menuItem.parentElement.childrenMenu) menuItem.classList.remove("selected");
 		});
 
 
-		self.addEventListener(menuItem, "mouseup", (event, menuItem) => {
+		core.addEventListener(menuItem, "mouseup", (event, menuItem) => {
 			if (menuItem.classList.contains("inactive")){
 				return;
 			}
@@ -609,6 +527,38 @@ a9os_core_main.removeMenu = (parentItem) => {
 	}
 }
 
+a9os_core_main.getMethodByName = (componentName, strMethod) => { // used by menus
+	
+	if (!strMethod) return false;
+
+	var arrComponentOverride = strMethod.split("]");
+	if (arrComponentOverride[1]) {
+		strMethod = arrComponentOverride[1].substring(1); // saco el primer "."
+
+		var methodToCall = window[arrComponentOverride[0].substring(1)]||false;
+		if (!methodToCall) return false;
+	} else {
+		var methodToCall = window[componentName]||false;
+		if (!methodToCall) return false;
+	}
+
+
+	var arrAction = strMethod.split(".");
+	for (var i = 0 ; i < arrAction.length ; i++){
+		methodToCall = methodToCall[arrAction[i]]||false;
+		if (!methodToCall) return false;
+	}
+	return methodToCall;
+}
+
+
+
+
+
+
+
+
+
 
 a9os_core_main.moveEvent = {};
 a9os_core_main.moveEvent.attach = () => {
@@ -622,7 +572,7 @@ a9os_core_main.moveEvent.attach = () => {
 		matchEvents : []
 	};
 
-	self.addEventListener(document, ["mouseup", "touchend", "mousedown"], (event) => {
+	core.addEventListener(document, ["mouseup", "touchend", "mousedown"], (event) => {
 		//var mainDiv = event.currentTarget;
 		if (!mainDiv.boolMoveEvent) return;
 
@@ -651,7 +601,7 @@ a9os_core_main.moveEvent.attach = () => {
 
 
 
-	self.addEventListener(document, ["mousedown", "touchstart"], (event) => {
+	core.addEventListener(document, ["mousedown", "touchstart"], (event) => {
 		//var mainDiv = event.currentTarget;
 		var listenerName = event.listenerName;
 
@@ -701,7 +651,7 @@ a9os_core_main.moveEvent.attach = () => {
 		};
 	});
 
-	self.addEventListener(document, ["mousemove", "touchmove"], (event) => {
+	core.addEventListener(document, ["mousemove", "touchmove"], (event) => {
 		//var mainDiv = event.currentTarget;
 		var listenerName = event.listenerName;
 
@@ -787,10 +737,6 @@ a9os_core_main.moveEvent.attach = () => {
 		}
 
 	});
-
-
-
-
 }
 
 a9os_core_main.moveEvent.add = (element, moveCb, endCb, ...extraArgs) => {
@@ -835,8 +781,6 @@ a9os_core_main.moveEvent.remove = (element) => {
 		}
 	}
 }
-
-
 
 
 
@@ -914,6 +858,13 @@ a9os_core_main.moveEvent.autoscroll.cancelAll = (target) => {
 
 
 
+
+
+
+
+
+
+
 a9os_core_main.removeWindow = (wind0wOrCmp, preventBackWindowSelect) => {
 	
 	if (wind0wOrCmp.classList.contains("window")) {
@@ -938,7 +889,8 @@ a9os_core_main.removeWindow = (wind0wOrCmp, preventBackWindowSelect) => {
 	}, 101, wind0w, preventBackWindowSelect); //< efecto de close
 }
 
-a9os_core_main.selectWindow = (componentOrWindow) => {
+a9os_core_main.selectWindow = (componentOrWindow, preventChangeScope) => {
+	//console.error("H");
 	
 	if (!componentOrWindow) return false;
 
@@ -951,10 +903,10 @@ a9os_core_main.selectWindow = (componentOrWindow) => {
 	if (!wind0w) return;
 	if (wind0w.classList.contains("top-window")) return;
 	if (wind0w.classList.contains("minimized")) a9os_core_window.minimizeRestoreWindow(wind0w);
-	core.link.push(wind0w.goToParentClass("component", "cmp").getAttribute("data-url"), {}, true);
 	core.link.title(wind0w.querySelector("*[data-textcontent='title']").textContent);
 	core.link.favicon(wind0w.querySelector(".window-bar .nav-icon img"));
-	self.changeWindowScope(wind0w.querySelector(".main-content > cmp"));
+
+	if (!preventChangeScope) core.changeComponentScopesByElement(wind0w.querySelector(".main-content > cmp"), true);
 
 	var arrWindows = self.component.querySelectorAll("cmp.a9os_core_window > .window");
 	if (arrWindows.length == 0){
@@ -986,17 +938,7 @@ a9os_core_main.selectWindow = (componentOrWindow) => {
 	}
 }
 
-a9os_core_main.selectWindowByPath = (path, onlyOneWindows) => {
-	var isOnlyOneClassname = "";
-	if (onlyOneWindows) isOnlyOneClassname = ".only-one";
-	var wind0w = document.querySelector("cmp.a9os_core_window[data-url='"+path+"'] .window"+isOnlyOneClassname);
-	if (wind0w){
-		self.selectWindow(wind0w);
-		return wind0w;
-	}
 
-	return false;
-}
 a9os_core_main.getPrevWindow = (wind0w) => {
 	
 	var returnWindow;
@@ -1015,29 +957,18 @@ a9os_core_main.getPrevWindow = (wind0w) => {
 	return returnWindow;
 }
 
-a9os_core_main.getMethodByName = (componentName, strMethod) => {
-	
-	if (!strMethod) return false;
-
-	var arrComponentOverride = strMethod.split("]");
-	if (arrComponentOverride[1]) {
-		strMethod = arrComponentOverride[1].substring(1); // saco el primer "."
-
-		var methodToCall = window[arrComponentOverride[0].substring(1)]||false;
-		if (!methodToCall) return false;
-	} else {
-		var methodToCall = window[componentName]||false;
-		if (!methodToCall) return false;
-	}
-
-
-	var arrAction = strMethod.split(".");
-	for (var i = 0 ; i < arrAction.length ; i++){
-		methodToCall = methodToCall[arrAction[i]]||false;
-		if (!methodToCall) return false;
-	}
-	return methodToCall;
+a9os_core_main.isMobile = () => {
+	return a9os_core_main.mainDiv.offsetWidth < 650;
 }
+
+
+
+
+
+
+
+
+
 
 a9os_core_main.splitFilePath = (path) => {
 	
@@ -1066,10 +997,8 @@ a9os_core_main.getFileExtension = (path) => {
 }
 
 
-a9os_core_main.isMobile = () => {
-	
-	return a9os_core_main.mainDiv.offsetWidth < 650;
-}
+
+
 
 
 a9os_core_main.windowCrossData = {};
@@ -1089,6 +1018,10 @@ a9os_core_main.windowCrossData.get = (id) => {
 	
 	return returnData||false;
 }
+
+
+
+
 
 
 
@@ -1183,6 +1116,9 @@ a9os_core_main.windowCrossCallback.observe = () => {
 }
 
 
+
+
+
 a9os_core_main.cutCopyPaste = {};
 a9os_core_main.cutCopyPaste.compare = (element) => {
 	if (element.tagName.toUpperCase() == "TEXTAREA") return true;
@@ -1194,6 +1130,12 @@ a9os_core_main.cutCopyPaste.compare = (element) => {
 	
 	return false;
 }
+
+
+
+
+
+
 
 a9os_core_main.kbShortcut = {};
 a9os_core_main.kbShortcut.attach = () => {
@@ -1242,7 +1184,7 @@ a9os_core_main.kbShortcut.attach = () => {
 		}
 	}
 
-	a9os_core_main.addEventListener(document.body, "keydown", (event, body) => {
+	core.addEventListener(document.body, "keydown", (event, body) => {
 
 		var arrElementsWithShortcuts = a9os_core_main.component.querySelectorAll("*[data-has-shortcuts]");
 
@@ -1401,6 +1343,12 @@ a9os_core_main.kbShortcut.convertKeyCodes = (arrShortcutKeys) => {
 	return arrFinal;
 }
 
+
+
+
+
+
+
 a9os_core_main.colorLogic = {};
 a9os_core_main.colorLogic.isLigther = (color) => {	
 	var red = 0;
@@ -1464,6 +1412,13 @@ a9os_core_main.colorLogic.getAverageRGB = (imgEl, qtyColors) => {
 	if (arrOutputColors.length == 1) return arrOutputColors[0];
 	return arrOutputColors;
 }
+
+
+
+
+
+
+
 
 
 a9os_core_main.testCompatSandbox = () => {

@@ -19,11 +19,13 @@
 class core_component extends core_db_model{
 	private static $ifDesktopInstalled;
 	private static $a9osUserControl;
+	private static $arrComponentUrls;
 
 
 	public function loadComponents($arrComponentIds, $postData = []){
 		self::$ifDesktopInstalled = $this->getCore()->getModel("a9os.core.install")->isInstalled();
 		self::$a9osUserControl = $this->getCore()->getModel("a9os.user.control");
+		if (isset($postData["inBootTime"]) && $postData["inBootTime"]) self::$arrComponentUrls = $this->getCore()->getModel("core.controller.component")->getArrComponentUrls();
 
 		if (empty($arrComponentIds)) return false;
 
@@ -54,12 +56,16 @@ class core_component extends core_db_model{
 		}
 		$arrFinalComponents = getComponentsAndChilds($arrComponentsFirstLevel);
 
-		$arrPreventComponents = json_decode($postData["preventComponents"]??"[]");
+		$arrOnlyonePreventComponents = json_decode($postData["onlyonePreventComponents"]??"[]");
+
 		$arrOutput = [];
 		foreach ($arrFinalComponents as $currComponent) {
-			if (in_array($currComponent->getComponentName(), $arrPreventComponents)) continue;
-			$arrOutput[$currComponent->getComponentName()] = $currComponent->buildComponentOutput($postData);
-			if ($arrOutput[$currComponent->getComponentName()] == false) unset($arrOutput[$currComponent->getComponentName()]);
+			if (in_array($currComponent->getComponentName(), $arrOnlyonePreventComponents)) continue;
+
+			$currComponentOutput = $currComponent->buildComponentOutput($postData);
+
+			if ($currComponentOutput !== false) 
+				$arrOutput[$currComponent->getComponentName()] = $currComponentOutput;
 		}
 
 
@@ -86,6 +92,7 @@ class core_component extends core_db_model{
 			"designPath" => "",
 			"clearPath" => false,
 			"onlyOne" => false,
+			"componentUrl" => "",
 
 			"data" => [],
 		];
@@ -99,6 +106,7 @@ class core_component extends core_db_model{
 			$newComponentItem["designPath"] = $this->getDesignPath();
 			$newComponentItem["clearPath"] = $this->getClearPath();
 			$newComponentItem["onlyOne"] = (bool)$this->getOnlyOne();
+			$newComponentItem["componentUrl"] = $this->getComponentUrl();
 		}
 
 
@@ -150,16 +158,10 @@ class core_component extends core_db_model{
 		$jsString = "var ".$componentName." = {};\n".$jsString;
 
 		$jsString .= "\n\n".$componentName.".__setContext = function(cd) {
-			if (window.a9os_core_main) {
-				core.sec.callOnlyFrom(".$componentName.".__setContext, {
-					whitelist : [core.rxExecute, core.initFromBootData, a9os_core_main.changeWindowScope]
-				});
-			} else {
-				core.sec.callOnlyFrom(".$componentName.".__setContext, {
-					whitelist : [core.rxExecute, core.initFromBootData]
-				});
-			}
-
+			core.sec.callOnlyFrom(".$componentName.".__setContext, {
+				whitelist : [core.rxExecute, core.initFromBootData, core.changeComponentScopesByElement]
+			});
+			
 			self.component = cd.component||self.component; 
 			self.event = cd.event||self.event;
 		}";
@@ -238,6 +240,12 @@ class core_component extends core_db_model{
 
 		if (empty($arrComponentChilds)) return false;
 		return $arrComponentChilds;
+	}
+
+	public function getComponentUrl(){
+		if (!$this->getID()) return false;
+
+		return self::$arrComponentUrls[$this->getID()]??"";
 	}
 
 	protected function _manageTable($tableInfo, $tableHandle) {

@@ -37,14 +37,14 @@ a9os_core_requestsyskey.main = (data) => {
 	var cancelBtn = self.component.querySelector(".buttons .cancel");
 	var submitBtn = self.component.querySelector(".buttons .submit");
 
-	a9os_core_main.addEventListener(cancelBtn, "click", (event, cancelBtn) => {
+	core.addEventListener(cancelBtn, "click", (event, cancelBtn) => {
 		cancel("Acción no permitida");
 	});
 
 
-	a9os_core_main.addEventListener(submitBtn, "click", submitTry);
+	core.addEventListener(submitBtn, "click", submitTry);
 
-	a9os_core_main.addEventListener(passInput, "keyup", (event, passInput) => {
+	core.addEventListener(passInput, "input", (event, passInput) => {
 		if (passInput.value.length == 0) submitBtn.disabled = true;
 		else submitBtn.disabled = false;
 
